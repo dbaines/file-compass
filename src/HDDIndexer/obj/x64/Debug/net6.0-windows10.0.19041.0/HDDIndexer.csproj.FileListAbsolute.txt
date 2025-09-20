@@ -1,1 +1,0 @@
-/media/david/data2/work/hdd-indexer/src/HDDIndexer/obj/x64/Debug/net6.0-windows10.0.19041.0/HDDIndexer.csproj.AssemblyReference.cache
