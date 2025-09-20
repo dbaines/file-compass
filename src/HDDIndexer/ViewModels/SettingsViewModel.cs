@@ -10,8 +10,11 @@ namespace HDDIndexer.ViewModels
     {
         private readonly ISettingsService _settingsService;
 
-        [ObservableProperty]
-        private ElementTheme _selectedTheme;
+        public int SelectedTheme
+        {
+            get => (int)_settingsService.Theme;
+            set => _settingsService.Theme = (ElementTheme)value;
+        }
 
         [ObservableProperty]
         private bool _autoScanOnStartup;

@@ -24,7 +24,7 @@
 
                         <StackPanel Grid.Column="0" HorizontalAlignment="Center">
                             <FontIcon Glyph="&#xEDA2;" FontSize="32" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="0" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{x:Bind ViewModel.Drives.Count, Mode=OneWay}" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center"/>
                             <TextBlock Text="Cataloged Drives" FontSize="12" HorizontalAlignment="Center" Opacity="0.8"/>
                         </StackPanel>
 
@@ -45,7 +45,7 @@
                 <!-- Quick Actions -->
                 <TextBlock Text="Quick Actions" FontSize="18" FontWeight="SemiBold"/>
                 <UniformGrid Columns="2" HorizontalAlignment="Stretch">
-                    <Button Content="Add New Drive"
+                    <Button Command="{x:Bind ViewModel.AddNewDriveCommand}"
                             HorizontalAlignment="Stretch"
                             Margin="0,0,10,0"
                             Padding="20"
@@ -58,14 +58,14 @@
                         </Button.Content>
                     </Button>
 
-                    <Button Content="Start Quick Scan"
+                    <Button Command="{x:Bind ViewModel.LoadDrivesCommand}"
                             HorizontalAlignment="Stretch"
                             Margin="10,0,0,0"
                             Padding="20">
                         <Button.Content>
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon Glyph="&#xE72C;" FontSize="16"/>
-                                <TextBlock Text="Start Quick Scan"/>
+                                <TextBlock Text="Refresh Drives"/>
                             </StackPanel>
                         </Button.Content>
                     </Button>

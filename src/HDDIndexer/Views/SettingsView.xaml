@@ -27,16 +27,16 @@
 
                         <StackPanel Spacing="10">
                             <TextBlock Text="Theme" FontWeight="SemiBold"/>
-                            <ComboBox Width="200" HorizontalAlignment="Left">
-                                <ComboBoxItem Content="System Default" IsSelected="True"/>
+                            <ComboBox Width="200" HorizontalAlignment="Left" SelectedIndex="{x:Bind ViewModel.SelectedTheme, Mode=TwoWay}">
+                                <ComboBoxItem Content="System Default"/>
                                 <ComboBoxItem Content="Light"/>
                                 <ComboBoxItem Content="Dark"/>
                             </ComboBox>
                         </StackPanel>
 
-                        <ToggleSwitch Header="Auto-scan on startup" IsOn="False"/>
-                        <ToggleSwitch Header="Show hidden files" IsOn="False"/>
-                        <ToggleSwitch Header="Show system files" IsOn="False"/>
+                        <ToggleSwitch Header="Auto-scan on startup" IsOn="{x:Bind ViewModel.AutoScanOnStartup, Mode=TwoWay}"/>
+                        <ToggleSwitch Header="Show hidden files" IsOn="{x:Bind ViewModel.ShowHiddenFiles, Mode=TwoWay}"/>
+                        <ToggleSwitch Header="Show system files" IsOn="{x:Bind ViewModel.ShowSystemFiles, Mode=TwoWay}"/>
                     </StackPanel>
                 </Border>
 
@@ -47,12 +47,12 @@
 
                         <StackPanel Spacing="10">
                             <TextBlock Text="Thread Count" FontWeight="SemiBold"/>
-                            <Slider Minimum="1" Maximum="8" Value="4" Width="200" HorizontalAlignment="Left"/>
+                            <Slider Minimum="1" Maximum="8" Value="{x:Bind ViewModel.ScanThreadCount, Mode=TwoWay}" Width="200" HorizontalAlignment="Left"/>
                         </StackPanel>
 
                         <StackPanel Spacing="10">
                             <TextBlock Text="Batch Size" FontWeight="SemiBold"/>
-                            <NumberBox Value="1000" Width="200" HorizontalAlignment="Left"/>
+                            <NumberBox Value="{x:Bind ViewModel.BatchSize, Mode=TwoWay}" Width="200" HorizontalAlignment="Left"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -62,7 +62,7 @@
                     <StackPanel Spacing="15">
                         <TextBlock Text="Backup" FontSize="18" FontWeight="SemiBold"/>
 
-                        <ToggleSwitch Header="Enable automatic backups" IsOn="False"/>
+                        <ToggleSwitch Header="Enable automatic backups" IsOn="{x:Bind ViewModel.EnableAutoBackup, Mode=TwoWay}"/>
 
                         <StackPanel Spacing="10">
                             <TextBlock Text="Backup Directory" FontWeight="SemiBold"/>
@@ -71,8 +71,13 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox Grid.Column="0" PlaceholderText="Select backup folder..." Margin="0,0,10,0"/>
-                                <Button Grid.Column="1" Content="Browse"/>
+                                <TextBox Grid.Column="0"
+                                        Text="{x:Bind ViewModel.BackupDirectory, Mode=TwoWay}"
+                                        PlaceholderText="Select backup folder..."
+                                        Margin="0,0,10,0"/>
+                                <Button Grid.Column="1"
+                                       Content="Browse"
+                                       Command="{x:Bind ViewModel.SelectBackupDirectoryCommand}"/>
                             </Grid>
                         </StackPanel>
                     </StackPanel>
@@ -80,8 +85,8 @@
 
                 <!-- Action Buttons -->
                 <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
-                    <Button Content="Reset to Defaults"/>
-                    <Button Content="Save Settings" Style="{StaticResource AccentButtonStyle}"/>
+                    <Button Content="Reset to Defaults" Command="{x:Bind ViewModel.ResetToDefaultsCommand}"/>
+                    <Button Content="Save Settings" Command="{x:Bind ViewModel.SaveSettingsCommand}" Style="{StaticResource AccentButtonStyle}"/>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

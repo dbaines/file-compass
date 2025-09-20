@@ -3,7 +3,15 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:models="using:HDDIndexer.Models"
+      xmlns:converters="using:HDDIndexer.Converters"
       mc:Ignorable="d">
+
+    <Page.Resources>
+        <converters:DateTimeConverter x:Key="DateTimeConverter"/>
+        <converters:StatusColorConverter x:Key="StatusColorConverter"/>
+        <converters:FileSizeConverter x:Key="FileSizeConverter"/>
+    </Page.Resources>
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -37,25 +45,38 @@
                         <TextBlock Text="Cataloged Drives" FontSize="16" FontWeight="SemiBold"/>
                     </Border>
 
-                    <ListView Grid.Row="1" Margin="10">
-                        <ListViewItem>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+                    <ListView Grid.Row="1" Margin="10"
+                             ItemsSource="{x:Bind ViewModel.Drives, Mode=OneWay}"
+                             SelectedItem="{x:Bind ViewModel.SelectedDrive, Mode=TwoWay}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Drive">
+                                <Grid Padding="10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <FontIcon Grid.Column="0" Glyph="&#xEDA2;" FontSize="20" Margin="0,0,10,0"/>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Sample Drive" FontWeight="SemiBold"/>
-                                    <TextBlock Text="Last scanned: Never" FontSize="12" Opacity="0.8"/>
-                                </StackPanel>
-                                <Border Grid.Column="2" Background="Orange" CornerRadius="10" Padding="8,4">
-                                    <TextBlock Text="Never Scanned" FontSize="10" Foreground="White"/>
-                                </Border>
-                            </Grid>
-                        </ListViewItem>
+                                    <FontIcon Grid.Column="0" Glyph="&#xEDA2;" FontSize="20" Margin="0,0,15,0"/>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{x:Bind DriveName}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{x:Bind VolumeLabel}" FontSize="12" Opacity="0.6"/>
+                                        <TextBlock Text="{x:Bind ScanDate, Converter={StaticResource DateTimeConverter}}" FontSize="11" Opacity="0.8"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Margin="10,0">
+                                        <TextBlock Text="{x:Bind FileCount}" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Files" FontSize="10" Opacity="0.8" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                    <Border Grid.Column="3" CornerRadius="10" Padding="8,4">
+                                        <Border.Background>
+                                            <SolidColorBrush Color="{x:Bind Status, Converter={StaticResource StatusColorConverter}}"/>
+                                        </Border.Background>
+                                        <TextBlock Text="{x:Bind Status}" FontSize="10" Foreground="White"/>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
                     </ListView>
                 </Grid>
             </Border>
@@ -72,10 +93,33 @@
                         <TextBlock Text="Available Drives" FontSize="16" FontWeight="SemiBold"/>
                     </Border>
 
-                    <StackPanel Grid.Row="1" Margin="10" Spacing="10">
-                        <TextBlock Text="No new drives detected" Opacity="0.6" HorizontalAlignment="Center" Margin="0,40,0,0"/>
-                        <Button Content="Refresh" HorizontalAlignment="Center"/>
-                    </StackPanel>
+                    <ScrollViewer Grid.Row="1" Margin="10">
+                        <StackPanel Spacing="10">
+                            <ListView ItemsSource="{x:Bind ViewModel.AvailableDrives, Mode=OneWay}"
+                                     SelectionMode="None">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <Grid Padding="10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <FontIcon Grid.Column="0" Glyph="&#xEDA2;" FontSize="16" Margin="0,0,10,0"/>
+                                            <TextBlock Grid.Column="1" Text="{x:Bind}" VerticalAlignment="Center"/>
+                                            <Button Grid.Column="2" Content="Add" FontSize="10" Padding="8,4"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+
+                            <Button Content="Refresh"
+                                   HorizontalAlignment="Center"
+                                   Command="{x:Bind ViewModel.RefreshAvailableDrivesCommand}"
+                                   Margin="0,20,0,0"/>
+                        </StackPanel>
+                    </ScrollViewer>
                 </Grid>
             </Border>
         </Grid>
