@@ -3,8 +3,18 @@ name: Build HDDIndexer Windows App
 on:
   push:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '*.txt'
+      - 'LICENSE'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '*.txt'
+      - 'LICENSE'
   workflow_dispatch:
 
 jobs:
@@ -24,6 +34,27 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '6.0.x'
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.nuget/packages
+          ~/.local/share/NuGet/v3-cache
+          ${{ github.workspace }}/.nuget/packages
+        key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets') }}
+        restore-keys: |
+          nuget-${{ runner.os }}-
+
+    - name: Cache .NET tools and SDK
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.dotnet
+          ${{ env.DOTNET_ROOT }}
+        key: dotnet-sdk-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          dotnet-sdk-${{ runner.os }}-
 
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
@@ -61,7 +92,7 @@ jobs:
     - name: Restore dependencies
       run: |
         echo "=== Starting dependency restore ==="
-        dotnet restore src/HDDIndexer/HDDIndexer.csproj --verbosity detailed
+        dotnet restore src/HDDIndexer/HDDIndexer.csproj --verbosity detailed --no-cache --force
         echo "=== Restore completed ==="
 
     - name: Verify XAML files
@@ -85,7 +116,7 @@ jobs:
         echo "Configuration: ${{ matrix.configuration }}"
         echo "Platform: ${{ matrix.platform }}"
         echo ""
-        dotnet build src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }} --no-restore --verbosity detailed
+        dotnet build src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }} --verbosity detailed
         if ($LASTEXITCODE -ne 0) {
           echo ""
           echo "=== BUILD FAILED - Additional debugging info ==="
@@ -113,7 +144,7 @@ jobs:
         echo "Target runtime: win10-${{ matrix.platform }}"
         echo "Output directory: publish-${{ matrix.platform }}"
         echo ""
-        dotnet publish src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -r win10-${{ matrix.platform }} --self-contained true --no-restore -o publish-${{ matrix.platform }} --verbosity detailed
+        dotnet publish src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -r win10-${{ matrix.platform }} --self-contained true --no-build -o publish-${{ matrix.platform }} --verbosity detailed
         if ($LASTEXITCODE -ne 0) {
           echo ""
           echo "=== PUBLISH FAILED - Exit code: $LASTEXITCODE ==="
@@ -135,6 +166,8 @@ jobs:
         name: HDDIndexer-${{ matrix.platform }}-${{ matrix.configuration }}
         path: publish-${{ matrix.platform }}/
         retention-days: 30
+        compression-level: 6
+        if-no-files-found: error
 
     - name: Create MSIX package (x64 only)
       if: matrix.platform == 'x64'
@@ -144,9 +177,9 @@ jobs:
         echo "Platform: ${{ matrix.platform }}"
         echo ""
         echo "=== MSIX build command ==="
-        echo "dotnet publish src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -r win10-${{ matrix.platform }} --self-contained true --no-restore -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=false -o msix-output --verbosity detailed"
+        echo "dotnet publish src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -r win10-${{ matrix.platform }} --self-contained true --no-build -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=false -o msix-output --verbosity detailed"
         echo ""
-        dotnet publish src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -r win10-${{ matrix.platform }} --self-contained true --no-restore -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=false -o msix-output --verbosity detailed
+        dotnet publish src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -r win10-${{ matrix.platform }} --self-contained true --no-build -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=false -o msix-output --verbosity detailed
         if ($LASTEXITCODE -ne 0) {
           echo ""
           echo "=== MSIX CREATION FAILED - Exit code: $LASTEXITCODE ==="
@@ -179,11 +212,13 @@ jobs:
         name: HDDIndexer-MSIX-${{ matrix.configuration }}
         path: msix-output/
         retention-days: 30
+        compression-level: 6
+        if-no-files-found: error
 
   release:
     needs: build
     runs-on: windows-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip release]')
 
     steps:
     - name: Checkout code
@@ -209,10 +244,10 @@ jobs:
 
     - name: Create release archives
       run: |
-        Compress-Archive -Path "release/x64/*" -DestinationPath "HDDIndexer-x64.zip"
-        Compress-Archive -Path "release/x86/*" -DestinationPath "HDDIndexer-x86.zip"
+        Compress-Archive -Path "release/x64/*" -DestinationPath "HDDIndexer-x64.zip" -CompressionLevel Optimal
+        Compress-Archive -Path "release/x86/*" -DestinationPath "HDDIndexer-x86.zip" -CompressionLevel Optimal
         if (Test-Path "release/msix") {
-          Compress-Archive -Path "release/msix/*" -DestinationPath "HDDIndexer-MSIX.zip"
+          Compress-Archive -Path "release/msix/*" -DestinationPath "HDDIndexer-MSIX.zip" -CompressionLevel Optimal
         }
 
     - name: Generate version tag
