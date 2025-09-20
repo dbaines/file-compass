@@ -44,8 +44,14 @@
 
                 <!-- Quick Actions -->
                 <TextBlock Text="Quick Actions" FontSize="18" FontWeight="SemiBold"/>
-                <UniformGrid Columns="2" HorizontalAlignment="Stretch">
-                    <Button Command="{x:Bind ViewModel.AddNewDriveCommand}"
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0"
+                            Command="{x:Bind ViewModel.AddNewDriveCommand}"
                             HorizontalAlignment="Stretch"
                             Margin="0,0,10,0"
                             Padding="20"
@@ -58,7 +64,8 @@
                         </Button.Content>
                     </Button>
 
-                    <Button Command="{x:Bind ViewModel.LoadDrivesCommand}"
+                    <Button Grid.Column="1"
+                            Command="{x:Bind ViewModel.LoadDrivesCommand}"
                             HorizontalAlignment="Stretch"
                             Margin="10,0,0,0"
                             Padding="20">
@@ -69,7 +76,7 @@
                             </StackPanel>
                         </Button.Content>
                     </Button>
-                </UniformGrid>
+                </Grid>
 
                 <!-- Recent Activity -->
                 <TextBlock Text="Recent Activity" FontSize="18" FontWeight="SemiBold"/>

@@ -22,8 +22,17 @@
             <StackPanel Spacing="20">
                 <TextBlock Text="Export Options" FontSize="18" FontWeight="SemiBold"/>
 
-                <UniformGrid Columns="2" HorizontalAlignment="Stretch">
-                    <Button Content="Export to PDF" Margin="0,0,10,10" Padding="20" Style="{StaticResource AccentButtonStyle}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Button Grid.Row="0" Grid.Column="0" Content="Export to PDF" Margin="0,0,10,10" Padding="20" Style="{StaticResource AccentButtonStyle}">
                         <Button.Content>
                             <StackPanel Spacing="8">
                                 <FontIcon Glyph="&#xE8A5;" FontSize="24"/>
@@ -32,7 +41,7 @@
                         </Button.Content>
                     </Button>
 
-                    <Button Content="Export to Excel" Margin="10,0,0,10" Padding="20">
+                    <Button Grid.Row="0" Grid.Column="1" Content="Export to Excel" Margin="10,0,0,10" Padding="20">
                         <Button.Content>
                             <StackPanel Spacing="8">
                                 <FontIcon Glyph="&#xE8A4;" FontSize="24"/>
@@ -41,7 +50,7 @@
                         </Button.Content>
                     </Button>
 
-                    <Button Content="Export to CSV" Margin="0,10,10,0" Padding="20">
+                    <Button Grid.Row="1" Grid.Column="0" Content="Export to CSV" Margin="0,10,10,0" Padding="20">
                         <Button.Content>
                             <StackPanel Spacing="8">
                                 <FontIcon Glyph="&#xE8A0;" FontSize="24"/>
@@ -50,7 +59,7 @@
                         </Button.Content>
                     </Button>
 
-                    <Button Content="Print Catalog" Margin="10,10,0,0" Padding="20">
+                    <Button Grid.Row="1" Grid.Column="1" Content="Print Catalog" Margin="10,10,0,0" Padding="20">
                         <Button.Content>
                             <StackPanel Spacing="8">
                                 <FontIcon Glyph="&#xE749;" FontSize="24"/>
@@ -58,7 +67,7 @@
                             </StackPanel>
                         </Button.Content>
                     </Button>
-                </UniformGrid>
+                </Grid>
             </StackPanel>
         </Border>
     </Grid>

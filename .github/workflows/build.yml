@@ -28,14 +28,101 @@ jobs:
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
+    - name: Display environment info
+      run: |
+        echo "=== Environment Information ==="
+        dotnet --info
+        echo ""
+        echo "=== MSBuild version ==="
+        msbuild -version
+        echo ""
+        echo "=== Windows SDK versions ==="
+        dir "C:\Program Files (x86)\Windows Kits\10\Include" 2>nul || echo "Windows Kits not found"
+        echo ""
+        echo "=== Project file content ==="
+        type src\HDDIndexer\HDDIndexer.csproj
+        echo ""
+        echo "=== Checking for Package.appxmanifest ==="
+        if (Test-Path "src\HDDIndexer\Package.appxmanifest") {
+          echo "Package.appxmanifest found:"
+          type src\HDDIndexer\Package.appxmanifest
+        } else {
+          echo "Package.appxmanifest not found"
+        }
+        echo ""
+        echo "=== Current working directory contents ==="
+        dir /s /b | Select-Object -First 20
+        echo ""
+
     - name: Restore dependencies
-      run: dotnet restore src/HDDIndexer/HDDIndexer.csproj
+      run: |
+        echo "=== Starting dependency restore ==="
+        dotnet restore src/HDDIndexer/HDDIndexer.csproj --verbosity detailed
+        echo "=== Restore completed ==="
+
+    - name: Verify XAML files
+      run: |
+        echo "=== Checking XAML files for common issues ==="
+        findstr /s /i "UniformGrid\|WrapPanel\|Toolkit:" src\HDDIndexer\**\*.xaml
+        if ($LASTEXITCODE -eq 0) {
+          echo "WARNING: Found potentially incompatible controls in XAML files"
+        } else {
+          echo "No obviously incompatible controls found in XAML"
+        }
+        echo ""
+        echo "=== XAML files list ==="
+        dir src\HDDIndexer\**\*.xaml /s /b
+        echo ""
 
     - name: Build application
-      run: dotnet build src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }} --no-restore
+      run: |
+        echo "=== Starting build process ==="
+        echo "Configuration: ${{ matrix.configuration }}"
+        echo "Platform: ${{ matrix.platform }}"
+        echo ""
+        dotnet build src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }} --no-restore --verbosity detailed
+        if ($LASTEXITCODE -ne 0) {
+          echo ""
+          echo "=== BUILD FAILED - Additional debugging info ==="
+          echo "Exit code: $LASTEXITCODE"
+          echo ""
+          echo "=== Checking for build logs ==="
+          if (Test-Path "src\HDDIndexer\obj") {
+            echo "Build object directory contents:"
+            dir src\HDDIndexer\obj /s /b
+          }
+          echo ""
+          echo "=== Checking for XAML compilation errors ==="
+          Get-ChildItem -Path "src\HDDIndexer\obj" -Recurse -Filter "*.json" | ForEach-Object {
+            echo "File: $($_.FullName)"
+            Get-Content $_.FullName
+            echo "---"
+          }
+          exit $LASTEXITCODE
+        }
+        echo "=== Build process completed successfully ==="
 
     - name: Publish self-contained application
-      run: dotnet publish src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -r win10-${{ matrix.platform }} --self-contained true --no-restore -o publish-${{ matrix.platform }}
+      run: |
+        echo "=== Starting publish process ==="
+        echo "Target runtime: win10-${{ matrix.platform }}"
+        echo "Output directory: publish-${{ matrix.platform }}"
+        echo ""
+        dotnet publish src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -r win10-${{ matrix.platform }} --self-contained true --no-restore -o publish-${{ matrix.platform }} --verbosity detailed
+        if ($LASTEXITCODE -ne 0) {
+          echo ""
+          echo "=== PUBLISH FAILED - Exit code: $LASTEXITCODE ==="
+          exit $LASTEXITCODE
+        }
+        echo ""
+        echo "=== Publish output contents ==="
+        if (Test-Path "publish-${{ matrix.platform }}") {
+          dir publish-${{ matrix.platform }} /s
+        } else {
+          echo "ERROR: Publish output directory does not exist!"
+          exit 1
+        }
+        echo "=== Publish process completed successfully ==="
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
@@ -47,7 +134,38 @@ jobs:
     - name: Create MSIX package (x64 only)
       if: matrix.platform == 'x64'
       run: |
-        dotnet publish src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -r win10-${{ matrix.platform }} --self-contained true --no-restore -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=false -o msix-output
+        echo "=== Starting MSIX package creation ==="
+        echo "Configuration: ${{ matrix.configuration }}"
+        echo "Platform: ${{ matrix.platform }}"
+        echo ""
+        echo "=== MSIX build command ==="
+        echo "dotnet publish src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -r win10-${{ matrix.platform }} --self-contained true --no-restore -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=false -o msix-output --verbosity detailed"
+        echo ""
+        dotnet publish src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -r win10-${{ matrix.platform }} --self-contained true --no-restore -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=false -o msix-output --verbosity detailed
+        if ($LASTEXITCODE -ne 0) {
+          echo ""
+          echo "=== MSIX CREATION FAILED - Exit code: $LASTEXITCODE ==="
+          echo "=== Checking for MSIX-specific errors ==="
+          if (Test-Path "src\HDDIndexer\obj") {
+            echo "Looking for Package.appxmanifest errors:"
+            Get-ChildItem -Path "src\HDDIndexer\obj" -Recurse -Filter "*appx*" | ForEach-Object {
+              echo "File: $($_.FullName)"
+              if ($_.Extension -eq ".log") {
+                Get-Content $_.FullName | Select-Object -Last 50
+              }
+            }
+          }
+          exit $LASTEXITCODE
+        }
+        echo ""
+        echo "=== MSIX output contents ==="
+        if (Test-Path "msix-output") {
+          dir msix-output /s
+        } else {
+          echo "ERROR: MSIX output directory does not exist!"
+          exit 1
+        }
+        echo "=== MSIX package creation completed successfully ==="
 
     - name: Upload MSIX artifacts
       if: matrix.platform == 'x64'
