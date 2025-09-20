@@ -48,6 +48,7 @@ namespace HDDIndexer
             services.AddSingleton<IPrintService, PrintService>();
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<ISettingsService, SettingsService>();
+            services.AddSingleton<IValidationService, ValidationService>();
 
             // ViewModels
             services.AddTransient<MainViewModel>();
