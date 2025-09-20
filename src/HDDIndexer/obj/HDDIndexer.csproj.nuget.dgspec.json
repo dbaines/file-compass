@@ -76,9 +76,9 @@
               "target": "Package",
               "version": "[1.4.231008000, )"
             },
-            "iTextSharp": {
+            "QuestPDF": {
               "target": "Package",
-              "version": "[5.5.13.3, )"
+              "version": "[2023.12.6, )"
             }
           },
           "imports": [

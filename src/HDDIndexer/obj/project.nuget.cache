@@ -1,10 +1,9 @@
 {
   "version": 2,
-  "dgSpecHash": "Ed/MaETpdObeNDPbNfe+CnfsQ5Pp29KXYlV4QoWM706/1ykaF2eWBeMBL/4wVm+C1XtnfCniBGcWvENSITgsVQ==",
+  "dgSpecHash": "JK5Jy6Ce8sbklTHD2EcbIn5LMEczgu4LhMfBcizlXmaTZfO+3O2OD47FV5e97pDzf7F9sZHViXmAwMTbOa20vA==",
   "success": true,
   "projectFilePath": "/media/david/data2/work/hdd-indexer/src/HDDIndexer/HDDIndexer.csproj",
   "expectedPackageFiles": [
-    "/home/david/.nuget/packages/bouncycastle/1.8.9/bouncycastle.1.8.9.nupkg.sha512",
     "/home/david/.nuget/packages/colorcode.core/2.0.13/colorcode.core.2.0.13.nupkg.sha512",
     "/home/david/.nuget/packages/colorcode.winui/2.0.13/colorcode.winui.2.0.13.nupkg.sha512",
     "/home/david/.nuget/packages/communitytoolkit.common/7.1.2/communitytoolkit.common.7.1.2.nupkg.sha512",
@@ -22,8 +21,10 @@
     "/home/david/.nuget/packages/epplus/6.2.10/epplus.6.2.10.nupkg.sha512",
     "/home/david/.nuget/packages/epplus.interfaces/6.1.1/epplus.interfaces.6.1.1.nupkg.sha512",
     "/home/david/.nuget/packages/epplus.system.drawing/6.1.1/epplus.system.drawing.6.1.1.nupkg.sha512",
+    "/home/david/.nuget/packages/harfbuzzsharp/7.3.0.1/harfbuzzsharp.7.3.0.1.nupkg.sha512",
+    "/home/david/.nuget/packages/harfbuzzsharp.nativeassets.macos/7.3.0.1/harfbuzzsharp.nativeassets.macos.7.3.0.1.nupkg.sha512",
+    "/home/david/.nuget/packages/harfbuzzsharp.nativeassets.win32/7.3.0.1/harfbuzzsharp.nativeassets.win32.7.3.0.1.nupkg.sha512",
     "/home/david/.nuget/packages/humanizer.core/2.8.26/humanizer.core.2.8.26.nupkg.sha512",
-    "/home/david/.nuget/packages/itextsharp/5.5.13.3/itextsharp.5.5.13.3.nupkg.sha512",
     "/home/david/.nuget/packages/microsoft.data.sqlite.core/6.0.25/microsoft.data.sqlite.core.6.0.25.nupkg.sha512",
     "/home/david/.nuget/packages/microsoft.entityframeworkcore/6.0.25/microsoft.entityframeworkcore.6.0.25.nupkg.sha512",
     "/home/david/.nuget/packages/microsoft.entityframeworkcore.abstractions/6.0.25/microsoft.entityframeworkcore.abstractions.6.0.25.nupkg.sha512",
@@ -69,6 +70,7 @@
     "/home/david/.nuget/packages/microsoft.windows.sdk.buildtools/10.0.22621.2428/microsoft.windows.sdk.buildtools.10.0.22621.2428.nupkg.sha512",
     "/home/david/.nuget/packages/microsoft.windowsappsdk/1.4.231008000/microsoft.windowsappsdk.1.4.231008000.nupkg.sha512",
     "/home/david/.nuget/packages/netstandard.library/1.6.1/netstandard.library.1.6.1.nupkg.sha512",
+    "/home/david/.nuget/packages/questpdf/2023.12.6/questpdf.2023.12.6.nupkg.sha512",
     "/home/david/.nuget/packages/runtime.any.system.collections/4.3.0/runtime.any.system.collections.4.3.0.nupkg.sha512",
     "/home/david/.nuget/packages/runtime.any.system.diagnostics.tools/4.3.0/runtime.any.system.diagnostics.tools.4.3.0.nupkg.sha512",
     "/home/david/.nuget/packages/runtime.any.system.diagnostics.tracing/4.3.0/runtime.any.system.diagnostics.tracing.4.3.0.nupkg.sha512",
@@ -113,6 +115,10 @@
     "/home/david/.nuget/packages/runtime.win7-x64.runtime.native.system.io.compression/4.3.0/runtime.win7-x64.runtime.native.system.io.compression.4.3.0.nupkg.sha512",
     "/home/david/.nuget/packages/runtime.win7-x86.runtime.native.system.io.compression/4.3.0/runtime.win7-x86.runtime.native.system.io.compression.4.3.0.nupkg.sha512",
     "/home/david/.nuget/packages/runtime.win7.system.private.uri/4.3.0/runtime.win7.system.private.uri.4.3.0.nupkg.sha512",
+    "/home/david/.nuget/packages/skiasharp/2.88.7/skiasharp.2.88.7.nupkg.sha512",
+    "/home/david/.nuget/packages/skiasharp.harfbuzz/2.88.7/skiasharp.harfbuzz.2.88.7.nupkg.sha512",
+    "/home/david/.nuget/packages/skiasharp.nativeassets.macos/2.88.7/skiasharp.nativeassets.macos.2.88.7.nupkg.sha512",
+    "/home/david/.nuget/packages/skiasharp.nativeassets.win32/2.88.7/skiasharp.nativeassets.win32.2.88.7.nupkg.sha512",
     "/home/david/.nuget/packages/sqlitepclraw.bundle_e_sqlite3/2.1.2/sqlitepclraw.bundle_e_sqlite3.2.1.2.nupkg.sha512",
     "/home/david/.nuget/packages/sqlitepclraw.core/2.1.2/sqlitepclraw.core.2.1.2.nupkg.sha512",
     "/home/david/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.2/sqlitepclraw.lib.e_sqlite3.2.1.2.nupkg.sha512",
@@ -201,26 +207,5 @@
     "/home/david/.nuget/packages/microsoft.netcore.app.host.win-arm64/6.0.36/microsoft.netcore.app.host.win-arm64.6.0.36.nupkg.sha512",
     "/home/david/.nuget/packages/microsoft.windows.sdk.net.ref/10.0.19041.52/microsoft.windows.sdk.net.ref.10.0.19041.52.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1701",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Package 'BouncyCastle 1.8.9' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net6.0-windows10.0.19041'. This package may not be fully compatible with your project.",
-      "libraryId": "BouncyCastle",
-      "targetGraphs": [
-        "net6.0-windows10.0.19041"
-      ]
-    },
-    {
-      "code": "NU1701",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Package 'iTextSharp 5.5.13.3' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net6.0-windows10.0.19041'. This package may not be fully compatible with your project.",
-      "libraryId": "iTextSharp",
-      "targetGraphs": [
-        "net6.0-windows10.0.19041"
-      ]
-    }
-  ]
+  "logs": []
 }

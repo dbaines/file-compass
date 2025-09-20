@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using HDDIndexer.Data;
 using HDDIndexer.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-
 namespace HDDIndexer.Services
 {
     public interface IValidationService
@@ -25,16 +23,13 @@ namespace HDDIndexer.Services
     {
         private readonly CatalogDbContext _dbContext;
         private readonly IBackupService _backupService;
-        private readonly ILogger<ValidationService> _logger;
 
         public ValidationService(
             CatalogDbContext dbContext,
-            IBackupService backupService,
-            ILogger<ValidationService> logger)
+            IBackupService backupService)
         {
             _dbContext = dbContext;
             _backupService = backupService;
-            _logger = logger;
         }
 
         public async Task<ValidationResult> ValidateDatabaseAsync()
@@ -135,11 +130,11 @@ namespace HDDIndexer.Services
                 result.IsValid = !issues.Any(i => i.Severity == IssueSeverity.High);
                 result.ValidationDate = DateTime.Now;
 
-                _logger.LogInformation($"Database validation completed. Found {issues.Count} issues.");
+                System.Diagnostics.Debug.WriteLine($"Database validation completed. Found {issues.Count} issues.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Database validation failed");
+                System.Diagnostics.Debug.WriteLine($"Database validation failed: {ex.Message}");
                 result.IsValid = false;
                 result.ErrorMessage = ex.Message;
             }
@@ -212,7 +207,7 @@ namespace HDDIndexer.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"File integrity validation failed for drive {driveId}");
+                System.Diagnostics.Debug.WriteLine($"File integrity validation failed for drive {driveId}: {ex.Message}");
                 result.IsValid = false;
                 result.ErrorMessage = ex.Message;
             }
@@ -245,7 +240,7 @@ namespace HDDIndexer.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Backup validation failed for {backupPath}");
+                System.Diagnostics.Debug.WriteLine($"Backup validation failed for {backupPath}: {ex.Message}");
                 result.IsValid = false;
                 result.ErrorMessage = ex.Message;
             }
@@ -282,7 +277,7 @@ namespace HDDIndexer.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Failed to repair issue: {issue.Description}");
+                System.Diagnostics.Debug.WriteLine($"Failed to repair issue: {issue.Description} - {ex.Message}");
             }
 
             return false;
@@ -350,12 +345,12 @@ namespace HDDIndexer.Services
                 _dbContext.Files.RemoveRange(orphanedFiles);
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogInformation($"Cleaned up {orphanedFiles.Count} orphaned file records");
+                System.Diagnostics.Debug.WriteLine($"Cleaned up {orphanedFiles.Count} orphaned file records");
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to cleanup orphaned records");
+                System.Diagnostics.Debug.WriteLine($"Failed to cleanup orphaned records: {ex.Message}");
                 return false;
             }
         }
