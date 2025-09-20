@@ -1,0 +1,138 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FileCompass.Desktop.ViewModels"
+        xmlns:t="clr-namespace:FileCompass.Translations;assembly=FileCompass.Translations"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="550"
+        x:Class="FileCompass.Desktop.Views.AdvancedSearchWindow"
+        x:DataType="vm:AdvancedSearchViewModel"
+        Title="{x:Static t:Strings.AdvancedTitle}"
+        Width="500" Height="550"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+
+    <Design.DataContext>
+        <vm:AdvancedSearchViewModel/>
+    </Design.DataContext>
+
+    <DockPanel Margin="16">
+        <!-- Buttons at bottom -->
+        <StackPanel DockPanel.Dock="Bottom"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="8"
+                    Margin="0,16,0,0">
+            <Button Content="{x:Static t:Strings.AdvancedClearFilters}"
+                    Command="{Binding ClearFiltersCommand}"/>
+            <Button Content="{x:Static t:Strings.ButtonCancel}"
+                    Click="OnCancelClick"/>
+            <Button Content="{x:Static t:Strings.ButtonSearch}"
+                    Classes="accent"
+                    Click="OnSearchClick"/>
+        </StackPanel>
+
+        <!-- Search options -->
+        <ScrollViewer>
+            <StackPanel Spacing="16">
+                <!-- Search Term -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{x:Static t:Strings.AdvancedSearchTerm}" FontWeight="SemiBold"/>
+                    <TextBox Text="{Binding SearchTerm}"
+                             Watermark="{x:Static t:Strings.AdvancedSearchPlaceholder}"/>
+                </StackPanel>
+
+                <!-- Location Filter -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{x:Static t:Strings.AdvancedLocation}" FontWeight="SemiBold"/>
+                    <ComboBox ItemsSource="{Binding Locations}"
+                              SelectedItem="{Binding SelectedLocation}"
+                              HorizontalAlignment="Stretch"
+                              PlaceholderText="{x:Static t:Strings.AdvancedLocationAll}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayName}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- File Extension -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{x:Static t:Strings.AdvancedExtension}" FontWeight="SemiBold"/>
+                    <ComboBox ItemsSource="{Binding CommonExtensions}"
+                              SelectedItem="{Binding SelectedExtension}"
+                              IsEditable="True"
+                              HorizontalAlignment="Stretch"
+                              PlaceholderText="{x:Static t:Strings.AdvancedExtensionAny}"/>
+                </StackPanel>
+
+                <!-- File Category -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{x:Static t:Strings.AdvancedCategory}" FontWeight="SemiBold"/>
+                    <ComboBox ItemsSource="{Binding FileCategories}"
+                              SelectedItem="{Binding SelectedCategory}"
+                              HorizontalAlignment="Stretch"
+                              PlaceholderText="{x:Static t:Strings.AdvancedCategoryAny}"/>
+                </StackPanel>
+
+                <!-- Size Range -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{x:Static t:Strings.AdvancedFileSize}" FontWeight="SemiBold"/>
+                    <Grid ColumnDefinitions="*,Auto,16,*,Auto">
+                        <NumericUpDown Grid.Column="0"
+                                       Value="{Binding MinSizeValue}"
+                                       Minimum="0"
+                                       FormatString="N0"
+                                       Watermark="{x:Static t:Strings.AdvancedSizeMin}"/>
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding SizeUnits}"
+                                  SelectedItem="{Binding MinSizeUnit}"
+                                  Width="70"
+                                  Margin="8,0,0,0"/>
+                        <TextBlock Grid.Column="2"
+                                   Text="{x:Static t:Strings.AdvancedSizeTo}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"/>
+                        <NumericUpDown Grid.Column="3"
+                                       Value="{Binding MaxSizeValue}"
+                                       Minimum="0"
+                                       FormatString="N0"
+                                       Watermark="{x:Static t:Strings.AdvancedSizeMax}"/>
+                        <ComboBox Grid.Column="4"
+                                  ItemsSource="{Binding SizeUnits}"
+                                  SelectedItem="{Binding MaxSizeUnit}"
+                                  Width="70"
+                                  Margin="8,0,0,0"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Date Range -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{x:Static t:Strings.AdvancedModifiedDate}" FontWeight="SemiBold"/>
+                    <Grid ColumnDefinitions="*,16,*">
+                        <CalendarDatePicker Grid.Column="0"
+                                            SelectedDate="{Binding ModifiedAfter}"
+                                            Watermark="{x:Static t:Strings.AdvancedDateFrom}"
+                                            HorizontalAlignment="Stretch"/>
+                        <TextBlock Grid.Column="1"
+                                   Text="{x:Static t:Strings.AdvancedSizeTo}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"/>
+                        <CalendarDatePicker Grid.Column="2"
+                                            SelectedDate="{Binding ModifiedBefore}"
+                                            Watermark="{x:Static t:Strings.AdvancedDateTo}"
+                                            HorizontalAlignment="Stretch"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Options -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{x:Static t:Strings.AdvancedOptions}" FontWeight="SemiBold"/>
+                    <CheckBox Content="{x:Static t:Strings.AdvancedIncludeFolders}"
+                              IsChecked="{Binding IncludeDirectories}"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

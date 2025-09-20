@@ -1,0 +1,415 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FileCompass.Desktop.ViewModels"
+        xmlns:local="using:FileCompass.Desktop.Converters"
+        xmlns:views="using:FileCompass.Desktop.Views"
+        xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+        xmlns:t="clr-namespace:FileCompass.Translations;assembly=FileCompass.Translations"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
+        x:Class="FileCompass.Desktop.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/filecompass.ico"
+        Title="{Binding WindowTitle}"
+        Width="1200" Height="700"
+        MinWidth="800" MinHeight="500">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Window.KeyBindings>
+        <!-- Keyboard shortcuts (handled in code-behind or ViewModel) -->
+        <KeyBinding Gesture="F5" Command="{Binding RefreshLocationCommand}"/>
+        <KeyBinding Gesture="Escape" Command="{Binding ClearSearchCommand}"/>
+    </Window.KeyBindings>
+
+    <DockPanel>
+        <!-- Menu Bar -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="{x:Static t:Strings.MenuFile}">
+                <MenuItem Header="{x:Static t:Strings.MenuFileAddLocation}" InputGesture="Ctrl+N" Click="OnAddLocationClick" IsEnabled="{Binding CanAddLocation}"/>
+                <Separator/>
+                <MenuItem Header="{x:Static t:Strings.MenuFileExport}">
+                    <MenuItem Header="{x:Static t:Strings.MenuFileExportCsv}" Click="OnExportCsvClick"/>
+                    <MenuItem Header="{x:Static t:Strings.MenuFileExportExcel}" Click="OnExportExcelClick"/>
+                    <MenuItem Header="{x:Static t:Strings.MenuFileExportHtml}" Click="OnExportHtmlClick"/>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="{x:Static t:Strings.MenuFileBackup}">
+                    <MenuItem Header="{x:Static t:Strings.MenuFileBackupCreate}" Click="OnBackupClick"/>
+                    <MenuItem Header="{x:Static t:Strings.MenuFileBackupRestore}" Click="OnRestoreClick"/>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="{x:Static t:Strings.MenuFileSettings}" Click="OnSettingsClick"/>
+                <Separator/>
+                <MenuItem Header="{x:Static t:Strings.MenuFileExit}" InputGesture="Alt+F4" Click="OnExitClick"/>
+            </MenuItem>
+            <MenuItem Header="{x:Static t:Strings.MenuView}">
+                <MenuItem Header="{x:Static t:Strings.MenuViewTheme}">
+                    <MenuItem Header="{x:Static t:Strings.MenuViewThemeSystem}" Click="OnThemeSystemClick"/>
+                    <MenuItem Header="{x:Static t:Strings.MenuViewThemeLight}" Click="OnThemeLightClick"/>
+                    <MenuItem Header="{x:Static t:Strings.MenuViewThemeDark}" Click="OnThemeDarkClick"/>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="{x:Static t:Strings.MenuHelp}">
+                <MenuItem Header="{x:Static t:Strings.MenuHelpAbout}" Click="OnAboutClick"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Status Bar at Bottom -->
+        <Border DockPanel.Dock="Bottom"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                Padding="8,4">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <TextBlock Grid.Column="0"
+                           Text="{Binding StatusMessage}"
+                           VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1"
+                           Text="{Binding ScanProgressText}"
+                           VerticalAlignment="Center"
+                           Margin="16,0"
+                           IsVisible="{Binding IsScanning}"/>
+                <Button Grid.Column="2"
+                        Content="{x:Static t:Strings.ButtonCancel}"
+                        Command="{Binding CancelScanCommand}"
+                        IsVisible="{Binding IsScanning}"
+                        Padding="8,2"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid ColumnDefinitions="250,Auto,*">
+
+            <!-- Left Panel: Locations -->
+            <Border Grid.Column="0"
+                    Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                    BorderThickness="0,0,1,0">
+                <DockPanel>
+                    <!-- Location Header -->
+                    <Border DockPanel.Dock="Top" Padding="8">
+                        <DockPanel>
+                            <TextBlock Text="{x:Static t:Strings.LocationsTitle}"
+                                       FontWeight="SemiBold"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"/>
+                            <Button DockPanel.Dock="Right"
+                                    Content="+"
+                                    ToolTip.Tip="{x:Static t:Strings.LocationsAddTooltip}"
+                                    Width="28" Height="28"
+                                    Margin="8,0,0,0"
+                                    HorizontalContentAlignment="Center"
+                                    IsEnabled="{Binding CanAddLocation}"
+                                    Click="OnAddLocationClick"/>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- Location List -->
+                    <ListBox x:Name="LocationsListBox"
+                             ItemsSource="{Binding Locations}"
+                             SelectedItem="{Binding SelectedLocation}"
+                             Padding="4">
+                        <ListBox.ContextMenu>
+                            <ContextMenu x:Name="LocationContextMenu" Opening="OnLocationContextMenuOpening">
+                                <MenuItem x:Name="RenameMenuItem" Header="{x:Static t:Strings.ContextRename}" Click="OnRenameLocationClick"/>
+                                <MenuItem x:Name="RescanMenuItem" Header="{x:Static t:Strings.ContextRescan}" Command="{Binding RefreshLocationCommand}"/>
+                                <MenuItem x:Name="CancelScanMenuItem" Header="{x:Static t:Strings.ContextCancelScan}" Click="OnCancelScanClick" IsVisible="False"/>
+                                <Separator x:Name="LocationMenuSeparator"/>
+                                <MenuItem x:Name="RemoveMenuItem" Header="{x:Static t:Strings.ContextRemove}" Command="{Binding DeleteLocationCommand}"/>
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,*" Margin="4"
+                                      Opacity="{Binding Status, Converter={x:Static local:ScanningOpacityConverter.Instance}}">
+                                    <!-- Status Indicator -->
+                                    <Ellipse Grid.Column="0"
+                                             Width="8" Height="8"
+                                             Margin="0,4,8,0"
+                                             VerticalAlignment="Top">
+                                        <Ellipse.Fill>
+                                            <MultiBinding Converter="{x:Static local:StatusToColorConverter.Instance}">
+                                                <Binding Path="Status"/>
+                                            </MultiBinding>
+                                        </Ellipse.Fill>
+                                        <ToolTip.Tip>
+                                            <MultiBinding Converter="{x:Static local:StatusToTextConverter.Instance}">
+                                                <Binding Path="Status"/>
+                                            </MultiBinding>
+                                        </ToolTip.Tip>
+                                    </Ellipse>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{Binding DisplayName}"
+                                                   FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding Path}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <!-- Show "Scanning..." when scanning, otherwise show file/folder counts -->
+                                        <TextBlock Text="{x:Static t:Strings.LocationsScanning}"
+                                                   FontSize="11"
+                                                   FontStyle="Italic"
+                                                   Foreground="Orange"
+                                                   Margin="0,2,0,0"
+                                                   IsVisible="{Binding Status, Converter={x:Static local:IsScanningConverter.Instance}}"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0"
+                                                    IsVisible="{Binding Status, Converter={x:Static local:IsNotScanningConverter.Instance}}">
+                                            <TextBlock Text="{Binding TotalFiles, StringFormat='{}{0:N0} files'}"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                            <TextBlock Text=" | "
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                            <TextBlock Text="{Binding TotalFolders, StringFormat='{}{0:N0} folders'}"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1"
+                          Width="4"
+                          Background="Transparent"
+                          ResizeDirection="Columns"/>
+
+            <!-- Center Panel: File Browser -->
+            <DockPanel Grid.Column="2">
+                <!-- Toolbar -->
+                <Border DockPanel.Dock="Top"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        BorderThickness="0,0,0,1">
+                    <StackPanel>
+                        <!-- Row 1: Search -->
+                        <Grid Margin="8" ColumnDefinitions="*,Auto,Auto,Auto,Auto">
+                            <!-- Search Box with History -->
+                            <AutoCompleteBox Grid.Column="0"
+                                             x:Name="SearchBox"
+                                             Text="{Binding SearchText, Mode=TwoWay}"
+                                             ItemsSource="{Binding SearchHistory}"
+                                             Watermark="{Binding SearchPlaceholder}"
+                                             FilterMode="Contains"
+                                             MinimumPrefixLength="0"
+                                             Margin="0,0,8,0">
+                                <AutoCompleteBox.KeyBindings>
+                                    <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}"/>
+                                </AutoCompleteBox.KeyBindings>
+                            </AutoCompleteBox>
+
+                            <Button Grid.Column="1"
+                                    Content="{x:Static t:Strings.ButtonSearch}"
+                                    Command="{Binding SearchCommand}"
+                                    Margin="0,0,4,0"/>
+
+                            <Button Grid.Column="2"
+                                    Content="{x:Static t:Strings.ButtonClear}"
+                                    Command="{Binding ClearSearchCommand}"
+                                    Margin="0,0,8,0"/>
+
+                            <Button Grid.Column="3"
+                                    Content="{x:Static t:Strings.ButtonAdvanced}"
+                                    Click="OnAdvancedSearchClick"
+                                    Margin="0,0,8,0"/>
+
+                            <Button Grid.Column="4"
+                                    Content="{x:Static t:Strings.ButtonRefresh}"
+                                    Command="{Binding RefreshLocationCommand}"
+                                    IsEnabled="{Binding SelectedLocation, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                        </Grid>
+
+                        <!-- Row 2: Filters -->
+                        <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                BorderThickness="0,1,0,0">
+                            <Grid Margin="8" ColumnDefinitions="Auto,*,Auto">
+                                <!-- File Type Filter Dropdown -->
+                                <Button Grid.Column="0"
+                                        x:Name="FileTypeFilterButton"
+                                        VerticalAlignment="Center"
+                                        Margin="0,0,8,0">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="{Binding FileTypeFilterText}" VerticalAlignment="Center"/>
+                                        <iconPacks:PackIconMaterial Kind="ChevronDown" Width="12" Height="12" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <Button.Flyout>
+                                        <Flyout Placement="BottomEdgeAlignedLeft">
+                                            <StackPanel Width="180" Spacing="4">
+                                                <!-- Quick actions -->
+                                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                                                    <Button Content="{x:Static t:Strings.ButtonAll}"
+                                                            Command="{Binding SelectAllFileTypesCommand}"
+                                                            Padding="8,2"/>
+                                                    <Button Content="{x:Static t:Strings.ButtonNone}"
+                                                            Command="{Binding DeselectAllFileTypesCommand}"
+                                                            Padding="8,2"/>
+                                                </StackPanel>
+                                                <Separator/>
+                                                <!-- Show Folders -->
+                                                <CheckBox Content="{x:Static t:Strings.FilterShowFolders}"
+                                                          IsChecked="{Binding ShowDirectories}"
+                                                          Margin="0,2"/>
+                                                <Separator/>
+                                                <!-- Category checkboxes -->
+                                                <ItemsControl ItemsSource="{Binding FileTypeFilters}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <CheckBox Content="{Binding DisplayName}"
+                                                                      IsChecked="{Binding IsSelected}"
+                                                                      Margin="0,2"/>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Flyout>
+                                    </Button.Flyout>
+                                </Button>
+
+                                <!-- Spacer -->
+                                <Border Grid.Column="1"/>
+
+                                <!-- Export -->
+                                <Button Grid.Column="2"
+                                        Content="{x:Static t:Strings.ButtonExport}"
+                                        Click="OnExportCsvClick"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Content area - Grid allows all children to occupy same space for proper centering -->
+                <Grid>
+                    <!-- Empty State: No Location Selected -->
+                    <views:EmptyStateView IsVisible="{Binding ShowNoLocationState}"
+                                          Icon="FolderSearch"
+                                          Title="{x:Static t:Strings.EmptyNoLocationTitle}"
+                                          Message="{x:Static t:Strings.EmptyNoLocationMessage}"/>
+
+                    <!-- Empty State: Location Has No Files -->
+                    <views:EmptyStateView IsVisible="{Binding ShowNoFilesState}"
+                                          Icon="FolderOpen"
+                                          Title="{x:Static t:Strings.EmptyNoFilesTitle}"
+                                          Message="{x:Static t:Strings.EmptyNoFilesMessage}"/>
+
+                    <!-- Empty State: Search Returned No Results -->
+                    <views:EmptyStateView IsVisible="{Binding ShowNoResultsState}"
+                                          Icon="FileSearchOutline"
+                                          Title="{x:Static t:Strings.EmptyNoResultsTitle}"
+                                          Message="{x:Static t:Strings.EmptyNoResultsMessage}"/>
+
+                <!-- Loading State -->
+                <Grid IsVisible="{Binding IsLoadingFiles}"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch">
+                    <StackPanel HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Spacing="16">
+                        <ProgressBar IsIndeterminate="True"
+                                     Width="200"
+                                     Height="8"/>
+                        <TextBlock Text="{x:Static t:Strings.LoadingFiles}"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- File List -->
+                <DataGrid x:Name="FilesDataGrid"
+                          ItemsSource="{Binding Files}"
+                          SelectedItem="{Binding SelectedFile}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserResizeColumns="True"
+                          CanUserSortColumns="True"
+                          GridLinesVisibility="Horizontal"
+                          IsVisible="{Binding ShowFileList}">
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="{x:Static t:Strings.ColumnColumns}">
+                                <MenuItem x:Name="IconColumnMenuItem"
+                                          Header="{x:Static t:Strings.ColumnIcon}"
+                                          ToggleType="CheckBox"
+                                          Click="OnColumnVisibilityClick"/>
+                                <MenuItem x:Name="NameColumnMenuItem"
+                                          Header="{x:Static t:Strings.ColumnName}"
+                                          ToggleType="CheckBox"
+                                          Click="OnColumnVisibilityClick"/>
+                                <!-- Location column is automatic based on search context -->
+                                <MenuItem x:Name="SizeColumnMenuItem"
+                                          Header="{x:Static t:Strings.ColumnSize}"
+                                          ToggleType="CheckBox"
+                                          Click="OnColumnVisibilityClick"/>
+                                <MenuItem x:Name="TypeColumnMenuItem"
+                                          Header="{x:Static t:Strings.ColumnType}"
+                                          ToggleType="CheckBox"
+                                          Click="OnColumnVisibilityClick"/>
+                                <MenuItem x:Name="ModifiedColumnMenuItem"
+                                          Header="{x:Static t:Strings.ColumnModified}"
+                                          ToggleType="CheckBox"
+                                          Click="OnColumnVisibilityClick"/>
+                                <MenuItem x:Name="PathColumnMenuItem"
+                                          Header="{x:Static t:Strings.ColumnPath}"
+                                          ToggleType="CheckBox"
+                                          Click="OnColumnVisibilityClick"/>
+                            </MenuItem>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                    <DataGrid.Columns>
+                        <!-- Column 0: Icon -->
+                        <DataGridTemplateColumn Header="" Width="40">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <iconPacks:PackIconMaterial Width="18" Height="18" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <iconPacks:PackIconMaterial.Kind>
+                                            <MultiBinding Converter="{x:Static local:FileIconKindConverter.Instance}">
+                                                <Binding Path="IsDirectory"/>
+                                                <Binding Path="FileCategory"/>
+                                            </MultiBinding>
+                                        </iconPacks:PackIconMaterial.Kind>
+                                        <iconPacks:PackIconMaterial.Foreground>
+                                            <MultiBinding Converter="{x:Static local:FileIconColorConverter.Instance}">
+                                                <Binding Path="IsDirectory"/>
+                                                <Binding Path="FileCategory"/>
+                                            </MultiBinding>
+                                        </iconPacks:PackIconMaterial.Foreground>
+                                    </iconPacks:PackIconMaterial>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <!-- Column 1: Name -->
+                        <DataGridTextColumn Header="{x:Static t:Strings.ColumnName}"
+                                            Binding="{Binding Name}"
+                                            Width="250"/>
+                        <!-- Column 2: Location -->
+                        <DataGridTextColumn Header="{x:Static t:Strings.ColumnLocation}"
+                                            Binding="{Binding LocationName}"
+                                            Width="120"/>
+                        <!-- Column 3: Size -->
+                        <DataGridTextColumn Header="{x:Static t:Strings.ColumnSize}"
+                                            Binding="{Binding DisplaySize}"
+                                            Width="80"/>
+                        <!-- Column 4: Type -->
+                        <DataGridTextColumn Header="{x:Static t:Strings.ColumnType}"
+                                            Binding="{Binding FileCategory}"
+                                            Width="80"/>
+                        <!-- Column 5: Modified -->
+                        <DataGridTextColumn Header="{x:Static t:Strings.ColumnModified}"
+                                            Binding="{Binding ModifiedAt, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}"
+                                            Width="130"/>
+                        <!-- Column 6: Path -->
+                        <DataGridTextColumn Header="{x:Static t:Strings.ColumnPath}"
+                                            Binding="{Binding ParentPath}"
+                                            Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                </Grid>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</Window>

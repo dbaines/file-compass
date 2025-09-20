@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- App Info -->
+  <data name="AppName" xml:space="preserve">
+    <value>FileCompass</value>
+  </data>
+
+  <!-- Menu - File -->
+  <data name="MenuFile" xml:space="preserve">
+    <value>_File</value>
+  </data>
+  <data name="MenuFileAddLocation" xml:space="preserve">
+    <value>_Add Location...</value>
+  </data>
+  <data name="MenuFileExport" xml:space="preserve">
+    <value>_Export</value>
+  </data>
+  <data name="MenuFileExportCsv" xml:space="preserve">
+    <value>Export to _CSV...</value>
+  </data>
+  <data name="MenuFileExportExcel" xml:space="preserve">
+    <value>Export to _Excel...</value>
+  </data>
+  <data name="MenuFileExportHtml" xml:space="preserve">
+    <value>Export to _HTML...</value>
+  </data>
+  <data name="MenuFileBackup" xml:space="preserve">
+    <value>_Backup</value>
+  </data>
+  <data name="MenuFileBackupCreate" xml:space="preserve">
+    <value>_Create Backup...</value>
+  </data>
+  <data name="MenuFileBackupRestore" xml:space="preserve">
+    <value>_Restore from Backup...</value>
+  </data>
+  <data name="MenuFileSettings" xml:space="preserve">
+    <value>_Settings...</value>
+  </data>
+  <data name="MenuFileExit" xml:space="preserve">
+    <value>E_xit</value>
+  </data>
+
+  <!-- Menu - View -->
+  <data name="MenuView" xml:space="preserve">
+    <value>_View</value>
+  </data>
+  <data name="MenuViewTheme" xml:space="preserve">
+    <value>_Theme</value>
+  </data>
+  <data name="MenuViewThemeSystem" xml:space="preserve">
+    <value>_System Default</value>
+  </data>
+  <data name="MenuViewThemeLight" xml:space="preserve">
+    <value>_Light</value>
+  </data>
+  <data name="MenuViewThemeDark" xml:space="preserve">
+    <value>_Dark</value>
+  </data>
+
+  <!-- Menu - Help -->
+  <data name="MenuHelp" xml:space="preserve">
+    <value>_Help</value>
+  </data>
+  <data name="MenuHelpAbout" xml:space="preserve">
+    <value>_About</value>
+  </data>
+
+  <!-- Buttons -->
+  <data name="ButtonSearch" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="ButtonClear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="ButtonAdvanced" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="ButtonRefresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="ButtonExport" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="ButtonCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ButtonOk" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="ButtonClose" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="ButtonAll" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="ButtonNone" xml:space="preserve">
+    <value>None</value>
+  </data>
+
+  <!-- Context Menu -->
+  <data name="ContextRename" xml:space="preserve">
+    <value>Rename...</value>
+  </data>
+  <data name="ContextRescan" xml:space="preserve">
+    <value>Rescan</value>
+  </data>
+  <data name="ContextCancelScan" xml:space="preserve">
+    <value>Cancel Scan</value>
+  </data>
+  <data name="ContextRemove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+
+  <!-- Locations Panel -->
+  <data name="LocationsTitle" xml:space="preserve">
+    <value>Locations</value>
+  </data>
+  <data name="LocationsAddTooltip" xml:space="preserve">
+    <value>Add Location</value>
+  </data>
+  <data name="LocationsScanning" xml:space="preserve">
+    <value>Scanning...</value>
+  </data>
+  <data name="LocationsFilesCount" xml:space="preserve">
+    <value>{0:N0} files</value>
+  </data>
+  <data name="LocationsFoldersCount" xml:space="preserve">
+    <value>{0:N0} folders</value>
+  </data>
+
+  <!-- Filters -->
+  <data name="FilterShowFolders" xml:space="preserve">
+    <value>Show Folders</value>
+  </data>
+  <data name="FilterAllTypes" xml:space="preserve">
+    <value>All types</value>
+  </data>
+  <data name="FilterNoTypes" xml:space="preserve">
+    <value>No types</value>
+  </data>
+  <data name="FilterTypesCount" xml:space="preserve">
+    <value>{0} types</value>
+  </data>
+
+  <!-- Search -->
+  <data name="SearchPlaceholderAll" xml:space="preserve">
+    <value>Search all files... (Ctrl+F)</value>
+  </data>
+  <data name="SearchPlaceholderLocation" xml:space="preserve">
+    <value>Search {0}... (Ctrl+F)</value>
+  </data>
+
+  <!-- Empty States -->
+  <data name="EmptyNoLocationTitle" xml:space="preserve">
+    <value>No Location Selected</value>
+  </data>
+  <data name="EmptyNoLocationMessage" xml:space="preserve">
+    <value>Select a location from the sidebar to browse its files,
+or use the search box to find files across all locations.</value>
+  </data>
+  <data name="EmptyNoFilesTitle" xml:space="preserve">
+    <value>No Files Found</value>
+  </data>
+  <data name="EmptyNoFilesMessage" xml:space="preserve">
+    <value>This location doesn't contain any files.
+Try rescanning or selecting a different location.</value>
+  </data>
+  <data name="EmptyNoResultsTitle" xml:space="preserve">
+    <value>No Results Found</value>
+  </data>
+  <data name="EmptyNoResultsMessage" xml:space="preserve">
+    <value>No files match your search criteria.
+Try adjusting your filters or search term.</value>
+  </data>
+
+  <!-- Loading -->
+  <data name="LoadingFiles" xml:space="preserve">
+    <value>Loading files...</value>
+  </data>
+
+  <!-- DataGrid Columns -->
+  <data name="ColumnIcon" xml:space="preserve">
+    <value>Icon</value>
+  </data>
+  <data name="ColumnName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ColumnLocation" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="ColumnSize" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="ColumnType" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="ColumnModified" xml:space="preserve">
+    <value>Modified</value>
+  </data>
+  <data name="ColumnPath" xml:space="preserve">
+    <value>Path</value>
+  </data>
+  <data name="ColumnColumns" xml:space="preserve">
+    <value>Columns</value>
+  </data>
+
+  <!-- Status Messages -->
+  <data name="StatusReady" xml:space="preserve">
+    <value>Ready</value>
+  </data>
+  <data name="StatusInitializing" xml:space="preserve">
+    <value>Initializing database...</value>
+  </data>
+  <data name="StatusLoading" xml:space="preserve">
+    <value>Loading files from {0}...</value>
+  </data>
+  <data name="StatusLoaded" xml:space="preserve">
+    <value>{0:N0} items loaded</value>
+  </data>
+  <data name="StatusSearching" xml:space="preserve">
+    <value>Searching '{0}' for '{1}'...</value>
+  </data>
+  <data name="StatusSearchingSimple" xml:space="preserve">
+    <value>Searching...</value>
+  </data>
+  <data name="StatusFound" xml:space="preserve">
+    <value>Found {0} results in {1:N0}ms</value>
+  </data>
+  <data name="StatusFoundFiltered" xml:space="preserve">
+    <value>Found {0} results{1} in {2:N0}ms</value>
+  </data>
+  <data name="StatusScanning" xml:space="preserve">
+    <value>Scanning {0}...</value>
+  </data>
+  <data name="StatusScanProgress" xml:space="preserve">
+    <value>Scanning: {0}</value>
+  </data>
+  <data name="StatusScanComplete" xml:space="preserve">
+    <value>Scan complete: {0} files, {1} folders</value>
+  </data>
+  <data name="StatusScanCancelled" xml:space="preserve">
+    <value>Scan cancelled</value>
+  </data>
+  <data name="StatusExportingCsv" xml:space="preserve">
+    <value>Exporting to CSV...</value>
+  </data>
+  <data name="StatusExportingExcel" xml:space="preserve">
+    <value>Exporting to Excel...</value>
+  </data>
+  <data name="StatusExportingHtml" xml:space="preserve">
+    <value>Exporting to HTML...</value>
+  </data>
+  <data name="StatusExported" xml:space="preserve">
+    <value>Exported {0} items to {1}</value>
+  </data>
+  <data name="StatusExportedExcel" xml:space="preserve">
+    <value>Exported {0} items to Excel</value>
+  </data>
+  <data name="StatusExportedHtml" xml:space="preserve">
+    <value>Exported {0} items to HTML</value>
+  </data>
+  <data name="StatusBackupCreating" xml:space="preserve">
+    <value>Creating backup...</value>
+  </data>
+  <data name="StatusBackupCreated" xml:space="preserve">
+    <value>Backup created successfully</value>
+  </data>
+  <data name="StatusBackupRestoring" xml:space="preserve">
+    <value>Restoring backup...</value>
+  </data>
+  <data name="StatusBackupRestored" xml:space="preserve">
+    <value>Backup restored successfully. Please restart the application for changes to take full effect.</value>
+  </data>
+  <data name="StatusLocationRemoved" xml:space="preserve">
+    <value>Location removed</value>
+  </data>
+  <data name="StatusLocationRenamed" xml:space="preserve">
+    <value>Location renamed</value>
+  </data>
+
+  <!-- Errors -->
+  <data name="ErrorGeneric" xml:space="preserve">
+    <value>Error: {0}</value>
+  </data>
+  <data name="ErrorLoading" xml:space="preserve">
+    <value>Error loading files: {0}</value>
+  </data>
+  <data name="ErrorSearch" xml:space="preserve">
+    <value>Search error: {0}</value>
+  </data>
+  <data name="ErrorScan" xml:space="preserve">
+    <value>Scan error: {0}</value>
+  </data>
+  <data name="ErrorExport" xml:space="preserve">
+    <value>Export error: {0}</value>
+  </data>
+  <data name="ErrorBackup" xml:space="preserve">
+    <value>Backup error: {0}</value>
+  </data>
+  <data name="ErrorRestore" xml:space="preserve">
+    <value>Restore error: {0}</value>
+  </data>
+  <data name="ErrorScanInProgress" xml:space="preserve">
+    <value>A scan is already in progress. Please wait or cancel it first.</value>
+  </data>
+  <data name="ErrorLocationNotFound" xml:space="preserve">
+    <value>Location not found</value>
+  </data>
+  <data name="ErrorLocationAccessDeniedTitle" xml:space="preserve">
+    <value>Access Denied</value>
+  </data>
+  <data name="ErrorLocationAccessDeniedMessage" xml:space="preserve">
+    <value>Cannot access this location. You may not have permission to read this folder, or network authentication may be required.</value>
+  </data>
+  <data name="ErrorLocationNotFoundTitle" xml:space="preserve">
+    <value>Location Not Found</value>
+  </data>
+  <data name="ErrorLocationNotFoundMessage" xml:space="preserve">
+    <value>The selected location does not exist or is not accessible. The path may be invalid or the network location may be unavailable.</value>
+  </data>
+
+  <!-- Dialogs -->
+  <data name="DialogAboutTitle" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="DialogAboutVersion" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
+  <data name="DialogAboutDescription" xml:space="preserve">
+    <value>A cross-platform file indexing application</value>
+  </data>
+  <data name="DialogAboutAuthor" xml:space="preserve">
+    <value>Author: David Baines</value>
+  </data>
+  <data name="DialogAboutLicense" xml:space="preserve">
+    <value>Licensed under MIT</value>
+  </data>
+  <data name="DialogAddLocationTitle" xml:space="preserve">
+    <value>Select Folder to Index</value>
+  </data>
+  <data name="DialogAddLocationUnsupportedTitle" xml:space="preserve">
+    <value>Unsupported Location</value>
+  </data>
+  <data name="DialogAddLocationUnsupportedMessage" xml:space="preserve">
+    <value>This location cannot be indexed. Only local file paths are supported.</value>
+  </data>
+  <data name="DialogLocationExistsTitle" xml:space="preserve">
+    <value>Location Already Exists</value>
+  </data>
+  <data name="DialogLocationExistsMessage" xml:space="preserve">
+    <value>The path "{0}" matches {1} existing location(s).
+What would you like to do?</value>
+  </data>
+  <data name="DialogLocationExistsAddNew" xml:space="preserve">
+    <value>Add as NEW location (different drive at same path)</value>
+  </data>
+  <data name="DialogLocationExistsRescan" xml:space="preserve">
+    <value>Re-scan: "{0}" (last scanned: {1})</value>
+  </data>
+  <data name="DialogLocationExistsNeverScanned" xml:space="preserve">
+    <value>never</value>
+  </data>
+  <data name="DialogNameLocationTitle" xml:space="preserve">
+    <value>Name This Location</value>
+  </data>
+  <data name="DialogNameLocationLabel" xml:space="preserve">
+    <value>Enter a name for this location:</value>
+  </data>
+  <data name="DialogRenameLocationTitle" xml:space="preserve">
+    <value>Rename Location</value>
+  </data>
+  <data name="DialogRenameLocationLabel" xml:space="preserve">
+    <value>Enter a custom name for this location:</value>
+  </data>
+  <data name="DialogCancelScanTitle" xml:space="preserve">
+    <value>Cancel Scan</value>
+  </data>
+  <data name="DialogCancelScanMessage" xml:space="preserve">
+    <value>Are you sure you want to cancel the current scan?
+Partial results may be lost.</value>
+  </data>
+  <data name="DialogCancelScanConfirm" xml:space="preserve">
+    <value>Yes, Cancel Scan</value>
+  </data>
+  <data name="DialogExportCsvTitle" xml:space="preserve">
+    <value>Export to CSV</value>
+  </data>
+  <data name="DialogExportCsvFilename" xml:space="preserve">
+    <value>file-catalog.csv</value>
+  </data>
+  <data name="DialogExportExcelTitle" xml:space="preserve">
+    <value>Export to Excel</value>
+  </data>
+  <data name="DialogExportExcelFilename" xml:space="preserve">
+    <value>file-catalog.xlsx</value>
+  </data>
+  <data name="DialogExportHtmlTitle" xml:space="preserve">
+    <value>Export to HTML</value>
+  </data>
+  <data name="DialogExportHtmlFilename" xml:space="preserve">
+    <value>file-catalog.html</value>
+  </data>
+  <data name="DialogBackupCreateTitle" xml:space="preserve">
+    <value>Create Backup</value>
+  </data>
+  <data name="DialogBackupRestoreTitle" xml:space="preserve">
+    <value>Restore from Backup</value>
+  </data>
+  <data name="DialogUnsupportedSaveTitle" xml:space="preserve">
+    <value>Unsupported Location</value>
+  </data>
+  <data name="DialogUnsupportedSaveMessage" xml:space="preserve">
+    <value>Cannot save to this location. Only local file paths are supported.</value>
+  </data>
+  <data name="DialogUnsupportedOpenMessage" xml:space="preserve">
+    <value>Cannot open this file. Only local file paths are supported.</value>
+  </data>
+
+  <!-- File Types -->
+  <data name="FiletypeCsv" xml:space="preserve">
+    <value>CSV Files</value>
+  </data>
+  <data name="FiletypeExcel" xml:space="preserve">
+    <value>Excel Files</value>
+  </data>
+  <data name="FiletypeHtml" xml:space="preserve">
+    <value>HTML Files</value>
+  </data>
+  <data name="FiletypeBackup" xml:space="preserve">
+    <value>FileCompass Backup</value>
+  </data>
+  <data name="FiletypeAll" xml:space="preserve">
+    <value>All Files</value>
+  </data>
+
+  <!-- Advanced Search -->
+  <data name="AdvancedTitle" xml:space="preserve">
+    <value>Advanced Search</value>
+  </data>
+  <data name="AdvancedClearFilters" xml:space="preserve">
+    <value>Clear Filters</value>
+  </data>
+  <data name="AdvancedSearchTerm" xml:space="preserve">
+    <value>Search Term</value>
+  </data>
+  <data name="AdvancedSearchPlaceholder" xml:space="preserve">
+    <value>Enter filename or part of path...</value>
+  </data>
+  <data name="AdvancedLocation" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="AdvancedLocationAll" xml:space="preserve">
+    <value>All locations</value>
+  </data>
+  <data name="AdvancedExtension" xml:space="preserve">
+    <value>File Extension</value>
+  </data>
+  <data name="AdvancedExtensionAny" xml:space="preserve">
+    <value>Any extension</value>
+  </data>
+  <data name="AdvancedCategory" xml:space="preserve">
+    <value>File Category</value>
+  </data>
+  <data name="AdvancedCategoryAny" xml:space="preserve">
+    <value>Any category</value>
+  </data>
+  <data name="AdvancedFileSize" xml:space="preserve">
+    <value>File Size</value>
+  </data>
+  <data name="AdvancedSizeMin" xml:space="preserve">
+    <value>Min</value>
+  </data>
+  <data name="AdvancedSizeMax" xml:space="preserve">
+    <value>Max</value>
+  </data>
+  <data name="AdvancedSizeTo" xml:space="preserve">
+    <value>to</value>
+  </data>
+  <data name="AdvancedModifiedDate" xml:space="preserve">
+    <value>Modified Date</value>
+  </data>
+  <data name="AdvancedDateFrom" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="AdvancedDateTo" xml:space="preserve">
+    <value>To</value>
+  </data>
+  <data name="AdvancedOptions" xml:space="preserve">
+    <value>Options</value>
+  </data>
+  <data name="AdvancedIncludeFolders" xml:space="preserve">
+    <value>Include folders in results</value>
+  </data>
+
+  <!-- Settings -->
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="SettingsAppearance" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="SettingsTheme" xml:space="preserve">
+    <value>Theme:</value>
+  </data>
+  <data name="SettingsThemeSystem" xml:space="preserve">
+    <value>System Default</value>
+  </data>
+  <data name="SettingsThemeLight" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="SettingsThemeDark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="SettingsSearch" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="SettingsSearchHistory" xml:space="preserve">
+    <value>Search history:</value>
+  </data>
+  <data name="SettingsClearHistory" xml:space="preserve">
+    <value>Clear History</value>
+  </data>
+  <data name="SettingsHistoryCount" xml:space="preserve">
+    <value>{0} items</value>
+  </data>
+  <data name="SettingsHistoryCleared" xml:space="preserve">
+    <value>0 items</value>
+  </data>
+  <data name="SettingsDatabase" xml:space="preserve">
+    <value>Database</value>
+  </data>
+  <data name="SettingsDatabaseLocation" xml:space="preserve">
+    <value>Location:</value>
+  </data>
+  <data name="SettingsDatabaseSize" xml:space="preserve">
+    <value>Size:</value>
+  </data>
+  <data name="SettingsDatabaseNotCreated" xml:space="preserve">
+    <value>Not created yet</value>
+  </data>
+
+  <!-- Size Units -->
+  <data name="SizeB" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="SizeKb" xml:space="preserve">
+    <value>KB</value>
+  </data>
+  <data name="SizeMb" xml:space="preserve">
+    <value>MB</value>
+  </data>
+  <data name="SizeGb" xml:space="preserve">
+    <value>GB</value>
+  </data>
+  <data name="SizeTb" xml:space="preserve">
+    <value>TB</value>
+  </data>
+
+  <!-- Location Status -->
+  <data name="LocationStatusNever" xml:space="preserve">
+    <value>Never scanned</value>
+  </data>
+  <data name="LocationStatusScanning" xml:space="preserve">
+    <value>Scanning in progress...</value>
+  </data>
+  <data name="LocationStatusCurrent" xml:space="preserve">
+    <value>Up to date</value>
+  </data>
+  <data name="LocationStatusOutdated" xml:space="preserve">
+    <value>Scan outdated</value>
+  </data>
+  <data name="LocationStatusInaccessible" xml:space="preserve">
+    <value>Location not accessible</value>
+  </data>
+  <data name="LocationStatusUnknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+
+  <!-- File Categories -->
+  <data name="CategoryDocuments" xml:space="preserve">
+    <value>Documents</value>
+  </data>
+  <data name="CategoryImages" xml:space="preserve">
+    <value>Images</value>
+  </data>
+  <data name="CategoryVideos" xml:space="preserve">
+    <value>Videos</value>
+  </data>
+  <data name="CategoryAudio" xml:space="preserve">
+    <value>Audio</value>
+  </data>
+  <data name="CategoryArchives" xml:space="preserve">
+    <value>Archives</value>
+  </data>
+  <data name="CategoryCode" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="CategoryExecutables" xml:space="preserve">
+    <value>Executables</value>
+  </data>
+  <data name="CategoryOther" xml:space="preserve">
+    <value>Other</value>
+  </data>
+</root>

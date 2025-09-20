@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconPacks="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
+             xmlns:views="using:FileCompass.Desktop.Views"
+             x:Class="FileCompass.Desktop.Views.EmptyStateView">
+    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalContentAlignment="Center"
+                  VerticalContentAlignment="Center">
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="16"
+                    Margin="32">
+            <iconPacks:PackIconMaterial Kind="{Binding Icon, RelativeSource={RelativeSource AncestorType=views:EmptyStateView}}"
+                                        Width="64"
+                                        Height="64"
+                                        HorizontalAlignment="Center"
+                                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+            <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType=views:EmptyStateView}}"
+                       FontSize="20"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+            <TextBlock Text="{Binding Message, RelativeSource={RelativeSource AncestorType=views:EmptyStateView}}"
+                       TextAlignment="Center"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

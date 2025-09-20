@@ -1,0 +1,75 @@
+<svg
+  width="512"
+  height="512"
+  viewBox="0 0 512 512"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  aria-label="FileCompass icon">
+
+  <!-- Folder body -->
+  <path
+    d="M64 144
+       Q64 112 96 112
+       H192
+       L224 144
+       H416
+       Q448 144 448 176
+       V384
+       Q448 416 416 416
+       H96
+       Q64 416 64 384
+       Z"
+    fill="#1F2A44"/>
+
+  <!-- Folder inner -->
+  <path
+    d="M80 176
+       H432
+       V368
+       Q432 392 408 392
+       H104
+       Q80 392 80 368
+       Z"
+    fill="#273A5E"/>
+
+  <!-- Compass bezel -->
+  <circle cx="256" cy="272" r="104" fill="#1A2338"/>
+  <circle cx="256" cy="272" r="96" fill="#E6EEF5"/>
+  <circle cx="256" cy="272" r="86" fill="#FFFFFF"/>
+
+  <!-- Cardinal ticks (N / E / S / W) -->
+  <g stroke="#6E87A3" stroke-width="6" stroke-linecap="round">
+    <line x1="256" y1="176" x2="256" y2="196"/>
+    <line x1="256" y1="348" x2="256" y2="328"/>
+    <line x1="176" y1="272" x2="196" y2="272"/>
+    <line x1="336" y1="272" x2="316" y2="272"/>
+  </g>
+
+  <!-- Intercardinal ticks (NE / SE / SW / NW) -->
+  <g stroke="#9FB2C8" stroke-width="4" stroke-linecap="round">
+    <!-- NE -->
+    <line x1="302" y1="226" x2="290" y2="238"/>
+    <!-- SE -->
+    <line x1="302" y1="318" x2="290" y2="306"/>
+    <!-- SW -->
+    <line x1="210" y1="318" x2="222" y2="306"/>
+    <!-- NW -->
+    <line x1="210" y1="226" x2="222" y2="238"/>
+  </g>
+
+  <!-- Compass needle -->
+  <!-- North (red, up) -->
+  <polygon
+    points="256,182 270,272 242,272"
+    fill="#E44C4C"/>
+
+  <!-- South (muted tail, down) -->
+  <polygon
+    points="256,362 242,272 270,272"
+    fill="#2BB0A6"/>
+
+  <!-- Needle pivot -->
+  <circle cx="256" cy="272" r="8" fill="#1F2A44"/>
+  <circle cx="256" cy="272" r="4" fill="#FFFFFF"/>
+
+</svg>

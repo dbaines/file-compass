@@ -1,0 +1,47 @@
+<Project>
+  <!-- Common properties for all projects in this solution -->
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Enable code style enforcement in build -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+
+    <!-- Generate documentation XML for public APIs -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!-- Common analyzers for all projects -->
+  <ItemGroup>
+    <!-- Meziantou.Analyzer - additional code quality rules -->
+    <PackageReference Include="Meziantou.Analyzer" Version="2.0.200">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!--
+    Suppress analyzer warnings that are too strict for this project.
+    These are intentionally suppressed after review - not ignored blindly.
+  -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>  <!-- Don't require XML docs on all public members -->
+    <NoWarn>$(NoWarn);MA0004</NoWarn>  <!-- ConfigureAwait - not needed in UI/desktop apps -->
+    <NoWarn>$(NoWarn);MA0011</NoWarn>  <!-- IFormatProvider - acceptable for internal formatting -->
+    <NoWarn>$(NoWarn);MA0048</NoWarn>  <!-- File name/type name: related types intentionally grouped (converters, enums with classes) -->
+    <NoWarn>$(NoWarn);MA0051</NoWarn>  <!-- Method too long - tracked as tech debt: SearchAsync, ScanDirectoryAsync, dialog methods -->
+    <!-- MA0016 - Prefer collection abstraction: evaluating for appropriate changes -->
+    <!-- MA0002 enabled: using StringComparer for Contains checks -->
+    <!-- MA0006 enabled: using string.Equals for comparisons -->
+    <!-- CA1305 - Evaluating IFormatProvider requirements -->
+    <!-- CA1805 enabled: removed explicit default value initializations -->
+    <!-- CA1822 enabled: members that can be static are now marked static -->
+    <!-- CA1869 enabled: JsonSerializerOptions now cached -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>  <!-- Test naming underscores - standard test naming convention -->
+  </PropertyGroup>
+</Project>
