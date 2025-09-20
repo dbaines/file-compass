@@ -13,10 +13,16 @@
         <converters:DateTimeConverter x:Key="DateTimeConverter"/>
         <converters:StatusColorConverter x:Key="StatusColorConverter"/>
         <converters:FileSizeConverter x:Key="FileSizeConverter"/>
+        <converters:ScanButtonVisibilityConverter x:Key="ScanButtonVisibilityConverter"/>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:PauseResumeTextConverter x:Key="PauseResumeTextConverter"/>
+        <converters:FilesScannedConverter x:Key="FilesScannedConverter"/>
+        <converters:FilesPerSecondConverter x:Key="FilesPerSecondConverter"/>
     </Page.Resources>
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
@@ -27,8 +33,57 @@
             <TextBlock Text="Manage your cataloged drives and scan for new content" FontSize="14" Opacity="0.8"/>
         </StackPanel>
 
+        <!-- Scan Progress Panel -->
+        <Border Grid.Row="1"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8" Padding="20" Margin="0,0,0,20"
+                Visibility="{x:Bind ViewModel.IsScanning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Scan Status -->
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.ScanStatus, Mode=OneWay}" FontWeight="SemiBold"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                        <Button Content="{x:Bind ViewModel.IsScanPaused, Mode=OneWay, Converter={StaticResource PauseResumeTextConverter}}"
+                                Command="{x:Bind ViewModel.PauseScanCommand}"
+                                FontSize="12" Padding="10,5"/>
+                        <Button Content="Cancel"
+                                Command="{x:Bind ViewModel.CancelScanCommand}"
+                                FontSize="12" Padding="10,5"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Progress Bar -->
+                <ProgressBar Grid.Row="1"
+                            Value="{x:Bind ViewModel.CurrentScanProgress.PercentComplete, Mode=OneWay, FallbackValue=0}"
+                            Maximum="100"
+                            Margin="0,0,0,10"/>
+
+                <!-- Progress Details -->
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.CurrentScanProgress.CurrentFiles, Mode=OneWay, Converter={StaticResource FilesScannedConverter}, FallbackValue='0 files'}" FontSize="12"/>
+                    <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.CurrentScanProgress.CurrentPath, Mode=OneWay, FallbackValue=''}" FontSize="12" Opacity="0.8" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Grid.Column="2" Text="{x:Bind ViewModel.CurrentScanProgress.FilesPerSecond, Mode=OneWay, Converter={StaticResource FilesPerSecondConverter}, FallbackValue='0 files/s'}" FontSize="12" HorizontalAlignment="Right"/>
+                </Grid>
+            </Grid>
+        </Border>
+
         <!-- Content -->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*"/>
                 <ColumnDefinition Width="20"/>
@@ -53,6 +108,24 @@
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="models:Drive">
                                 <Grid Padding="10">
+                                    <Grid.ContextFlyout>
+                                        <MenuFlyout>
+                                            <MenuFlyoutItem Text="Scan Drive" Icon="Refresh"
+                                                           Command="{Binding ElementName=DriveListPageRoot, Path=DataContext.ScanDriveCommand}"
+                                                           CommandParameter="{x:Bind}"/>
+                                            <MenuFlyoutItem Text="Browse Files" Icon="Folder"
+                                                           Command="{Binding ElementName=DriveListPageRoot, Path=DataContext.BrowseDriveCommand}"
+                                                           CommandParameter="{x:Bind}"/>
+                                            <MenuFlyoutSeparator/>
+                                            <MenuFlyoutItem Text="Remove from Catalog" Icon="Delete"
+                                                           Command="{Binding ElementName=DriveListPageRoot, Path=DataContext.RemoveDriveCommand}"
+                                                           CommandParameter="{x:Bind}"/>
+                                            <MenuFlyoutItem Text="Properties" Icon="Setting"
+                                                           Command="{Binding ElementName=DriveListPageRoot, Path=DataContext.ShowDrivePropertiesCommand}"
+                                                           CommandParameter="{x:Bind}"/>
+                                        </MenuFlyout>
+                                    </Grid.ContextFlyout>
+
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
@@ -70,12 +143,32 @@
                                         <TextBlock Text="{x:Bind FileCount}" FontWeight="SemiBold" HorizontalAlignment="Center"/>
                                         <TextBlock Text="Files" FontSize="10" Opacity="0.8" HorizontalAlignment="Center"/>
                                     </StackPanel>
-                                    <Border Grid.Column="3" CornerRadius="10" Padding="8,4">
-                                        <Border.Background>
-                                            <SolidColorBrush Color="{x:Bind Status, Converter={StaticResource StatusColorConverter}}"/>
-                                        </Border.Background>
-                                        <TextBlock Text="{x:Bind Status}" FontSize="10" Foreground="White"/>
-                                    </Border>
+
+                                    <!-- Drive Actions -->
+                                    <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="5">
+                                        <Button Content="Scan"
+                                                Command="{x:Bind DataContext.ScanDriveCommand, ElementName=DriveListPageRoot}"
+                                                CommandParameter="{x:Bind}"
+                                                FontSize="10" Padding="8,4"
+                                                Visibility="{x:Bind Status, Converter={StaticResource ScanButtonVisibilityConverter}}"/>
+
+                                        <Button Content="Pause"
+                                                Command="{x:Bind DataContext.PauseScanCommand, ElementName=DriveListPageRoot}"
+                                                FontSize="10" Padding="8,4"
+                                                Visibility="{x:Bind DataContext.IsScanning, ElementName=DriveListPageRoot, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                                        <Button Content="Cancel"
+                                                Command="{x:Bind DataContext.CancelScanCommand, ElementName=DriveListPageRoot}"
+                                                FontSize="10" Padding="8,4"
+                                                Visibility="{x:Bind DataContext.IsScanning, ElementName=DriveListPageRoot, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                                        <Border CornerRadius="10" Padding="8,4">
+                                            <Border.Background>
+                                                <SolidColorBrush Color="{x:Bind Status, Converter={StaticResource StatusColorConverter}}"/>
+                                            </Border.Background>
+                                            <TextBlock Text="{x:Bind Status}" FontSize="10" Foreground="White"/>
+                                        </Border>
+                                    </StackPanel>
                                 </Grid>
                             </DataTemplate>
                         </ListView.ItemTemplate>

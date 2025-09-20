@@ -138,9 +138,57 @@ namespace HDDIndexer.ViewModels
         }
 
         [RelayCommand]
-        private void ToggleAdvancedSearch()
+        private async Task ToggleAdvancedSearchAsync()
         {
-            IsAdvancedSearchOpen = !IsAdvancedSearchOpen;
+            var dialog = new Views.AdvancedSearchDialog();
+
+            // Get available drives
+            var driveService = App.Current.Services.GetService(typeof(Services.IDriveService)) as Services.IDriveService;
+            if (driveService != null)
+            {
+                var drives = await driveService.GetCatalogedDrivesAsync();
+                dialog.SetAvailableDrives(drives);
+            }
+
+            dialog.XamlRoot = App.Current.m_window?.Content.XamlRoot;
+            var result = await dialog.ShowAsync();
+
+            if (result == Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary)
+            {
+                // Update search criteria with selected drives
+                dialog.SearchCriteria.DriveIds = dialog.GetSelectedDriveIds();
+
+                // Perform advanced search
+                await PerformAdvancedSearchWithCriteriaAsync(dialog.SearchCriteria);
+            }
+        }
+
+        private async Task PerformAdvancedSearchWithCriteriaAsync(SearchCriteria criteria)
+        {
+            try
+            {
+                IsBusy = true;
+                SearchStatus = "Performing advanced search...";
+                SearchResults.Clear();
+
+                var results = await _searchService.AdvancedSearchAsync(criteria);
+
+                foreach (var result in results)
+                {
+                    SearchResults.Add(result);
+                }
+
+                ResultCount = SearchResults.Count;
+                SearchStatus = $"Found {ResultCount} results";
+            }
+            catch (Exception ex)
+            {
+                SearchStatus = $"Search failed: {ex.Message}";
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         [RelayCommand]

@@ -25,6 +25,9 @@ namespace HDDIndexer.Models
         public double UsagePercentage => TotalSize > 0 ? (double)UsedSpace / TotalSize * 100 : 0;
         public bool IsOnline { get; set; }
         public DriveStatus Status { get; set; }
+
+        // UI-specific properties (not persisted)
+        public bool IsSelected { get; set; }
     }
 
     public enum DriveStatus

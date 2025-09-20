@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using HDDIndexer.Models;
 using HDDIndexer.Services;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HDDIndexer.ViewModels
 {
@@ -36,11 +37,21 @@ namespace HDDIndexer.ViewModels
         [ObservableProperty]
         private string _scanStatus = string.Empty;
 
+        public bool IsScanPaused => _scannerService.IsScanPaused;
+
         public DriveListViewModel(IDriveService driveService, IScannerService scannerService)
         {
             _driveService = driveService;
             _scannerService = scannerService;
             Title = "Drive Management";
+
+            // Subscribe to scan status changes to update IsScanPaused
+            _scannerService.ScanStatusChanged += OnScanStatusChanged;
+        }
+
+        private void OnScanStatusChanged(object? sender, ScanStatusChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(IsScanPaused));
         }
 
         public override async void Initialize()
@@ -231,6 +242,48 @@ namespace HDDIndexer.ViewModels
                 await _driveService.UpdateDriveAsync(drive);
                 await RefreshDrivesAsync();
             }
+        }
+
+        [RelayCommand]
+        private void BrowseDrive(Drive? drive)
+        {
+            if (drive == null) return;
+
+            var navigationService = App.Current.Services.GetService<INavigationService>();
+            navigationService?.NavigateTo("FileBrowserView", drive);
+        }
+
+        [RelayCommand]
+        private async Task ShowDrivePropertiesAsync(Drive? drive)
+        {
+            if (drive == null) return;
+
+            var dialog = new ContentDialog
+            {
+                Title = $"Drive Properties - {drive.DriveName}",
+                Content = new StackPanel
+                {
+                    Spacing = 10,
+                    Children =
+                    {
+                        new TextBlock { Text = $"Drive Name: {drive.DriveName}", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                        new TextBlock { Text = $"Volume Label: {drive.VolumeLabel ?? "N/A"}" },
+                        new TextBlock { Text = $"Serial Number: {drive.SerialNumber ?? "N/A"}" },
+                        new TextBlock { Text = $"File System: {drive.FileSystem ?? "N/A"}" },
+                        new TextBlock { Text = $"Total Size: {drive.TotalSize:N0} bytes" },
+                        new TextBlock { Text = $"Used Space: {drive.UsedSpace:N0} bytes" },
+                        new TextBlock { Text = $"Free Space: {drive.FreeSpace:N0} bytes" },
+                        new TextBlock { Text = $"Files: {drive.FileCount:N0}" },
+                        new TextBlock { Text = $"Directories: {drive.DirectoryCount:N0}" },
+                        new TextBlock { Text = $"Last Scan: {drive.ScanDate:F}" },
+                        new TextBlock { Text = $"Status: {drive.Status}" }
+                    }
+                },
+                CloseButtonText = "Close",
+                XamlRoot = App.Current.m_window?.Content.XamlRoot
+            };
+
+            await dialog.ShowAsync();
         }
 
         partial void OnSelectedDriveChanged(Drive? value)

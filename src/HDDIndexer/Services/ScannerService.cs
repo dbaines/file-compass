@@ -64,7 +64,8 @@ namespace HDDIndexer.Services
                     fileEntries,
                     scanProgress,
                     progress,
-                    cancellationToken);
+                    cancellationToken,
+                    DateTime.Now);
 
                 // Batch insert files
                 await BatchInsertFilesAsync(fileEntries);
@@ -107,7 +108,8 @@ namespace HDDIndexer.Services
             List<FileEntry> fileEntries,
             ScanProgress scanProgress,
             IProgress<ScanProgress> progress,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            DateTime startTime = default)
         {
             if (cancellationToken.IsCancellationRequested) return;
             await CheckPauseAsync();
@@ -157,6 +159,14 @@ namespace HDDIndexer.Services
                         if (scanProgress.CurrentFiles % 100 == 0)
                         {
                             scanProgress.CurrentPath = file.FullName;
+                            scanProgress.ElapsedTime = DateTime.Now - startTime;
+
+                            // Calculate files per second
+                            if (scanProgress.ElapsedTime.TotalSeconds > 0)
+                            {
+                                scanProgress.FilesPerSecond = scanProgress.CurrentFiles / scanProgress.ElapsedTime.TotalSeconds;
+                            }
+
                             progress.Report(scanProgress);
                         }
                     }
@@ -178,7 +188,8 @@ namespace HDDIndexer.Services
                         fileEntries,
                         scanProgress,
                         progress,
-                        cancellationToken);
+                        cancellationToken,
+                        startTime);
                 }
             }
             catch (UnauthorizedAccessException)

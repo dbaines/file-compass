@@ -3,10 +3,21 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:models="using:HDDIndexer.Models"
+      xmlns:converters="using:HDDIndexer.Converters"
+      x:Name="Page"
       mc:Ignorable="d">
+
+    <Page.Resources>
+        <converters:FileSizeConverter x:Key="FileSizeConverter"/>
+        <converters:DateTimeConverter x:Key="DateTimeConverter"/>
+        <converters:FileIconConverter x:Key="FileIconConverter"/>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Page.Resources>
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -18,22 +29,134 @@
             <TextBlock Text="Browse files and folders in your cataloged drives" FontSize="14" Opacity="0.8"/>
         </StackPanel>
 
+        <!-- Navigation Controls -->
+        <Grid Grid.Row="1" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Command="{x:Bind ViewModel.NavigateUpCommand}"
+                    ToolTipService.ToolTip="Go up one level" Margin="0,0,10,0">
+                <FontIcon Glyph="&#xE74A;" FontSize="16"/>
+            </Button>
+
+            <Button Grid.Column="1" Command="{x:Bind ViewModel.LoadRootFilesCommand}"
+                    ToolTipService.ToolTip="Go to root" Margin="0,0,10,0">
+                <FontIcon Glyph="&#xE80F;" FontSize="16"/>
+            </Button>
+
+            <CheckBox Grid.Column="3" Content="Show hidden files"
+                     IsChecked="{x:Bind ViewModel.ShowHiddenFiles, Mode=TwoWay}"/>
+        </Grid>
+
         <!-- Breadcrumb -->
-        <Border Grid.Row="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+        <Border Grid.Row="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 CornerRadius="4" Padding="15,10" Margin="0,0,0,20">
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <FontIcon Glyph="&#xE80F;" FontSize="16"/>
-                <TextBlock Text="No drive selected" Opacity="0.8"/>
+                <TextBlock Text="{x:Bind ViewModel.CurrentPathString, Mode=OneWay}"
+                          Opacity="0.8"
+                          Visibility="{x:Bind ViewModel.CurrentDrive, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                <TextBlock Text="No drive selected"
+                          Opacity="0.6"
+                          Visibility="{x:Bind ViewModel.CurrentDrive, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}"/>
             </StackPanel>
         </Border>
 
         <!-- File List -->
-        <Border Grid.Row="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8">
+        <Border Grid.Row="3" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8">
             <Grid>
+                <!-- Loading indicator -->
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                           Spacing="10">
+                    <ProgressRing IsActive="True" Width="40" Height="40"/>
+                    <TextBlock Text="Loading files..." Opacity="0.8"/>
+                </StackPanel>
+
+                <!-- Empty state -->
                 <TextBlock Text="Select a drive to browse its contents"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Center"
-                          Opacity="0.6"/>
+                          Opacity="0.6"
+                          Visibility="{x:Bind ViewModel.CurrentDrive, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}"/>
+
+                <!-- File ListView -->
+                <ListView ItemsSource="{x:Bind ViewModel.Files, Mode=OneWay}"
+                         SelectedItem="{x:Bind ViewModel.SelectedFile, Mode=TwoWay}"
+                         SelectionMode="Single"
+                         Visibility="{x:Bind ViewModel.CurrentDrive, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                         DoubleTapped="OnFileListDoubleTapped"
+                         Padding="15">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:FileEntry">
+                            <Grid>
+                                <Grid.ContextFlyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Text="Open" Icon="OpenFile"
+                                                       Visibility="{x:Bind IsDirectory, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                       Command="{Binding ElementName=Page, Path=ViewModel.NavigateToFolderCommand}"
+                                                       CommandParameter="{x:Bind}"/>
+                                        <MenuFlyoutItem Text="Copy Path" Icon="Copy"
+                                                       Command="{Binding ElementName=Page, Path=ViewModel.CopyPathCommand}"
+                                                       CommandParameter="{x:Bind}"/>
+                                        <MenuFlyoutItem Text="Properties" Icon="Setting"
+                                                       Command="{Binding ElementName=Page, Path=ViewModel.OpenFilePropertiesCommand}"
+                                                       CommandParameter="{x:Bind}"/>
+                                    </MenuFlyout>
+                                </Grid.ContextFlyout>
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- File Icon -->
+                                <FontIcon Grid.Column="0"
+                                         Glyph="{x:Bind Converter={StaticResource FileIconConverter}}"
+                                         FontSize="16"
+                                         Margin="0,0,12,0"/>
+
+                                <!-- File Name -->
+                                <TextBlock Grid.Column="1"
+                                          Text="{x:Bind FileName}"
+                                          VerticalAlignment="Center"
+                                          TextTrimming="CharacterEllipsis"/>
+
+                                <!-- File Size -->
+                                <TextBlock Grid.Column="2"
+                                          Text="{x:Bind FileSize, Converter={StaticResource FileSizeConverter}}"
+                                          VerticalAlignment="Center"
+                                          Opacity="0.7"
+                                          Margin="12,0"
+                                          Visibility="{x:Bind IsDirectory, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}"/>
+
+                                <!-- Modified Date -->
+                                <TextBlock Grid.Column="3"
+                                          Text="{x:Bind ModificationDate, Converter={StaticResource DateTimeConverter}}"
+                                          VerticalAlignment="Center"
+                                          Opacity="0.7"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Padding" Value="8"/>
+                            <Setter Property="Margin" Value="0,1"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel/>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                </ListView>
             </Grid>
         </Border>
     </Grid>
