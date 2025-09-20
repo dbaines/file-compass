@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
@@ -9,16 +8,16 @@
 
   <Identity
     Name="HDDIndexer"
-    Publisher="CN=Developer"
+    Publisher="CN=YourPublisher"
     Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="6F2FF6AD-6CE3-4B7E-9B9A-6C8E8A6B5F5E" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="12345678-1234-1234-1234-123456789012" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>HDD Indexer</DisplayName>
-    <PublisherDisplayName>Developer</PublisherDisplayName>
+    <PublisherDisplayName>Your Company</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
-    <Description>HDD Indexer - File Catalog Manager for Windows 11</Description>
+    <Description>Professional hard drive cataloging application for Windows 11</Description>
   </Properties>
 
   <Dependencies>
@@ -36,23 +35,48 @@
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
         DisplayName="HDD Indexer"
-        Description="File Catalog Manager for Windows 11"
+        Description="Professional hard drive cataloging application"
         BackgroundColor="transparent"
-        Square150x150Logo="Assets\Square150x150Logo.scale-200.png"
-        Square44x44Logo="Assets\Square44x44Logo.scale-200.png">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.scale-200.png"  Square71x71Logo="Assets\Square150x150Logo.scale-200.png" Square310x310Logo="Assets\Square150x150Logo.scale-200.png"/>
-        <uap:SplashScreen Image="Assets\SplashScreen.scale-200.png" />
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+        <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
+
+      <Extensions>
+        <!-- File type associations -->
+        <uap:Extension Category="windows.fileTypeAssociation">
+          <uap:FileTypeAssociation Name="hddindex">
+            <uap:SupportedFileTypes>
+              <uap:FileType>.hddidx</uap:FileType>
+              <uap:FileType>.backup</uap:FileType>
+            </uap:SupportedFileTypes>
+            <uap:DisplayName>HDD Index File</uap:DisplayName>
+            <uap:Logo>Assets\Square44x44Logo.png</uap:Logo>
+            <uap:InfoTip>HDD Indexer catalog file</uap:InfoTip>
+          </uap:FileTypeAssociation>
+        </uap:Extension>
+
+        <!-- Protocol activation -->
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="hddindexer">
+            <uap:DisplayName>HDD Indexer Protocol</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
+
+        <!-- Toast notifications -->
+        <uap:Extension Category="windows.toastNotificationActivation">
+          <uap:ToastNotificationActivation ToastActivatorCLSID="12345678-1234-1234-1234-123456789012" />
+        </uap:Extension>
+      </Extensions>
     </Application>
   </Applications>
 
   <Capabilities>
-    <rescap:Capability Name="runFullTrust" />
     <Capability Name="internetClient" />
+    <rescap:Capability Name="broadFileSystemAccess" />
+    <rescap:Capability Name="runFullTrust" />
     <uap:Capability Name="removableStorage" />
     <uap:Capability Name="documentsLibrary" />
-    <uap:Capability Name="picturesLibrary" />
-    <uap:Capability Name="videosLibrary" />
-    <uap:Capability Name="musicLibrary" />
   </Capabilities>
 </Package>

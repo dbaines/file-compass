@@ -1,0 +1,129 @@
+<Page x:Class="HDDIndexer.Views.HelpView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="Help &amp; Documentation" FontSize="24" FontWeight="Bold"/>
+            <TextBlock Text="Learn how to use HDD Indexer effectively" FontSize="14" Opacity="0.8"/>
+        </StackPanel>
+
+        <!-- Content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Navigation -->
+            <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="15">
+                <ScrollViewer>
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Contents" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,10"/>
+
+                        <TreeView x:Name="HelpTreeView" SelectionChanged="OnHelpTopicSelected">
+                            <TreeViewNode Content="Getting Started" IsExpanded="True">
+                                <TreeViewNode Content="Installation" Tag="installation"/>
+                                <TreeViewNode Content="First Time Setup" Tag="setup"/>
+                                <TreeViewNode Content="Quick Start Guide" Tag="quickstart"/>
+                            </TreeViewNode>
+
+                            <TreeViewNode Content="Scanning Drives" IsExpanded="True">
+                                <TreeViewNode Content="Adding Drives" Tag="adding-drives"/>
+                                <TreeViewNode Content="Scan Options" Tag="scan-options"/>
+                                <TreeViewNode Content="Managing Scans" Tag="managing-scans"/>
+                                <TreeViewNode Content="Incremental Updates" Tag="incremental"/>
+                            </TreeViewNode>
+
+                            <TreeViewNode Content="Searching Files" IsExpanded="True">
+                                <TreeViewNode Content="Quick Search" Tag="quick-search"/>
+                                <TreeViewNode Content="Advanced Search" Tag="advanced-search"/>
+                                <TreeViewNode Content="Search Filters" Tag="search-filters"/>
+                                <TreeViewNode Content="Search History" Tag="search-history"/>
+                            </TreeViewNode>
+
+                            <TreeViewNode Content="File Management" IsExpanded="False">
+                                <TreeViewNode Content="File Browser" Tag="file-browser"/>
+                                <TreeViewNode Content="File Properties" Tag="file-properties"/>
+                                <TreeViewNode Content="Context Menus" Tag="context-menus"/>
+                            </TreeViewNode>
+
+                            <TreeViewNode Content="Backup &amp; Restore" IsExpanded="False">
+                                <TreeViewNode Content="Creating Backups" Tag="creating-backups"/>
+                                <TreeViewNode Content="Restoring Data" Tag="restoring-data"/>
+                                <TreeViewNode Content="Scheduled Backups" Tag="scheduled-backups"/>
+                                <TreeViewNode Content="Backup Validation" Tag="backup-validation"/>
+                            </TreeViewNode>
+
+                            <TreeViewNode Content="Export &amp; Print" IsExpanded="False">
+                                <TreeViewNode Content="Export Formats" Tag="export-formats"/>
+                                <TreeViewNode Content="Print Options" Tag="print-options"/>
+                                <TreeViewNode Content="Report Templates" Tag="report-templates"/>
+                            </TreeViewNode>
+
+                            <TreeViewNode Content="Settings &amp; Preferences" IsExpanded="False">
+                                <TreeViewNode Content="General Settings" Tag="general-settings"/>
+                                <TreeViewNode Content="Scan Settings" Tag="scan-settings"/>
+                                <TreeViewNode Content="Appearance" Tag="appearance"/>
+                                <TreeViewNode Content="Accessibility" Tag="accessibility"/>
+                            </TreeViewNode>
+
+                            <TreeViewNode Content="Keyboard Shortcuts" Tag="shortcuts"/>
+                            <TreeViewNode Content="Troubleshooting" Tag="troubleshooting"/>
+                            <TreeViewNode Content="FAQ" Tag="faq"/>
+                            <TreeViewNode Content="About" Tag="about"/>
+                        </TreeView>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Content Area -->
+            <Border Grid.Column="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="30">
+                <ScrollViewer x:Name="ContentScrollViewer">
+                    <StackPanel x:Name="ContentPanel" Spacing="15">
+                        <!-- Default content -->
+                        <TextBlock Text="Welcome to HDD Indexer Help" FontSize="20" FontWeight="SemiBold"/>
+                        <TextBlock TextWrapping="Wrap" FontSize="14" Opacity="0.8">
+                            Select a topic from the navigation panel on the left to view detailed information about using HDD Indexer.
+                        </TextBlock>
+
+                        <Border Background="{ThemeResource SystemFillColorAttentionBrush}"
+                                CornerRadius="4" Padding="15" Margin="0,20,0,0">
+                            <StackPanel Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <FontIcon Glyph="&#xE946;" FontSize="16" Foreground="{ThemeResource SystemColorHighlightBrush}"/>
+                                    <TextBlock Text="Quick Tip" FontWeight="SemiBold" Foreground="{ThemeResource SystemColorHighlightBrush}"/>
+                                </StackPanel>
+                                <TextBlock TextWrapping="Wrap" FontSize="14">
+                                    Press F1 at any time to open this help system, or use Ctrl+F to quickly search for files across your catalogs.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,30,0,0">
+                            <Button Content="Getting Started"
+                                    Click="OnQuickNavigate"
+                                    Tag="quickstart"
+                                    Style="{ThemeResource AccentButtonStyle}"/>
+                            <Button Content="Keyboard Shortcuts"
+                                    Click="OnQuickNavigate"
+                                    Tag="shortcuts"/>
+                            <Button Content="Video Tutorials"
+                                    Click="OnOpenVideoTutorials"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

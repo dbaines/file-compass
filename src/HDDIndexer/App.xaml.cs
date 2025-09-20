@@ -49,6 +49,11 @@ namespace HDDIndexer
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<ISettingsService, SettingsService>();
             services.AddSingleton<IValidationService, ValidationService>();
+            services.AddSingleton<INotificationService, NotificationService>();
+            services.AddSingleton<ITaskbarService, TaskbarService>();
+            services.AddSingleton<IKeyboardShortcutService, KeyboardShortcutService>();
+            services.AddSingleton<IUpdateService, UpdateService>();
+            services.AddSingleton<IPerformanceService, PerformanceService>();
 
             // ViewModels
             services.AddTransient<MainViewModel>();
@@ -73,6 +78,16 @@ namespace HDDIndexer
                 var dbContext = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
                 await dbContext.Database.MigrateAsync();
             }
+
+            // Initialize Windows 11 services
+            var notificationService = Services.GetRequiredService<INotificationService>();
+            notificationService.RegisterNotificationHandlers();
+
+            var shortcutService = Services.GetRequiredService<IKeyboardShortcutService>();
+            shortcutService.RegisterGlobalShortcuts();
+
+            var updateService = Services.GetRequiredService<IUpdateService>();
+            updateService.ScheduleUpdateCheck(TimeSpan.FromHours(24)); // Check daily
 
             m_window = Services.GetRequiredService<MainWindow>();
             m_window.Activate();
