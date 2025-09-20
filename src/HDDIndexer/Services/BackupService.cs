@@ -146,7 +146,7 @@ namespace HDDIndexer.Services
                     await RestoreMergeWithConflictResolution(backupDrives, backupFiles, options.ConflictResolution, result);
                 }
 
-                await _dbContext.SaveChangesAsync()
+                await _dbContext.SaveChangesAsync();
 
                 result.Success = true;
             }

@@ -101,7 +101,7 @@ namespace HDDIndexer.Services
             var modifiers = GetCurrentModifiers();
             var shortcutKey = new ShortcutKey(e.Key, modifiers);
 
-            if _shortcuts.TryGetValue(shortcutKey, out var shortcutAction))
+            if (_shortcuts.TryGetValue(shortcutKey, out var shortcutAction))
             {
                 try
                 {
