@@ -1,0 +1,83 @@
+<Page x:Class="HDDIndexer.Views.DriveListView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="Drive Management" FontSize="24" FontWeight="Bold"/>
+            <TextBlock Text="Manage your cataloged drives and scan for new content" FontSize="14" Opacity="0.8"/>
+        </StackPanel>
+
+        <!-- Content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Cataloged Drives -->
+            <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Padding="20,20,20,10">
+                        <TextBlock Text="Cataloged Drives" FontSize="16" FontWeight="SemiBold"/>
+                    </Border>
+
+                    <ListView Grid.Row="1" Margin="10">
+                        <ListViewItem>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <FontIcon Grid.Column="0" Glyph="&#xEDA2;" FontSize="20" Margin="0,0,10,0"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Sample Drive" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Last scanned: Never" FontSize="12" Opacity="0.8"/>
+                                </StackPanel>
+                                <Border Grid.Column="2" Background="Orange" CornerRadius="10" Padding="8,4">
+                                    <TextBlock Text="Never Scanned" FontSize="10" Foreground="White"/>
+                                </Border>
+                            </Grid>
+                        </ListViewItem>
+                    </ListView>
+                </Grid>
+            </Border>
+
+            <!-- Available Drives -->
+            <Border Grid.Column="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Padding="20,20,20,10">
+                        <TextBlock Text="Available Drives" FontSize="16" FontWeight="SemiBold"/>
+                    </Border>
+
+                    <StackPanel Grid.Row="1" Margin="10" Spacing="10">
+                        <TextBlock Text="No new drives detected" Opacity="0.6" HorizontalAlignment="Center" Margin="0,40,0,0"/>
+                        <Button Content="Refresh" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

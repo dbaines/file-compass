@@ -1,0 +1,65 @@
+<Page x:Class="HDDIndexer.Views.PrintExportView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="Print & Export" FontSize="24" FontWeight="Bold"/>
+            <TextBlock Text="Generate reports and export your catalog data" FontSize="14" Opacity="0.8"/>
+        </StackPanel>
+
+        <!-- Content -->
+        <Border Grid.Row="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20">
+            <StackPanel Spacing="20">
+                <TextBlock Text="Export Options" FontSize="18" FontWeight="SemiBold"/>
+
+                <UniformGrid Columns="2" HorizontalAlignment="Stretch">
+                    <Button Content="Export to PDF" Margin="0,0,10,10" Padding="20" Style="{StaticResource AccentButtonStyle}">
+                        <Button.Content>
+                            <StackPanel Spacing="8">
+                                <FontIcon Glyph="&#xE8A5;" FontSize="24"/>
+                                <TextBlock Text="Export to PDF"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+
+                    <Button Content="Export to Excel" Margin="10,0,0,10" Padding="20">
+                        <Button.Content>
+                            <StackPanel Spacing="8">
+                                <FontIcon Glyph="&#xE8A4;" FontSize="24"/>
+                                <TextBlock Text="Export to Excel"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+
+                    <Button Content="Export to CSV" Margin="0,10,10,0" Padding="20">
+                        <Button.Content>
+                            <StackPanel Spacing="8">
+                                <FontIcon Glyph="&#xE8A0;" FontSize="24"/>
+                                <TextBlock Text="Export to CSV"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+
+                    <Button Content="Print Catalog" Margin="10,10,0,0" Padding="20">
+                        <Button.Content>
+                            <StackPanel Spacing="8">
+                                <FontIcon Glyph="&#xE749;" FontSize="24"/>
+                                <TextBlock Text="Print Catalog"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                </UniformGrid>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>

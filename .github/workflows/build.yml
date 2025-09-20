@@ -1,0 +1,134 @@
+name: Build HDDIndexer Windows App
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        configuration: [Release]
+        platform: [x64, x86]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '6.0.x'
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Restore dependencies
+      run: dotnet restore src/HDDIndexer/HDDIndexer.csproj
+
+    - name: Build application
+      run: dotnet build src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }} --no-restore
+
+    - name: Publish self-contained application
+      run: dotnet publish src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -r win10-${{ matrix.platform }} --self-contained true --no-restore -o publish-${{ matrix.platform }}
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: HDDIndexer-${{ matrix.platform }}-${{ matrix.configuration }}
+        path: publish-${{ matrix.platform }}/
+        retention-days: 30
+
+    - name: Create MSIX package (x64 only)
+      if: matrix.platform == 'x64'
+      run: |
+        dotnet publish src/HDDIndexer/HDDIndexer.csproj -c ${{ matrix.configuration }} -r win10-${{ matrix.platform }} --self-contained true --no-restore -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=false -o msix-output
+
+    - name: Upload MSIX artifacts
+      if: matrix.platform == 'x64'
+      uses: actions/upload-artifact@v4
+      with:
+        name: HDDIndexer-MSIX-${{ matrix.configuration }}
+        path: msix-output/
+        retention-days: 30
+
+  release:
+    needs: build
+    runs-on: windows-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download x64 artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: HDDIndexer-x64-Release
+        path: release/x64/
+
+    - name: Download x86 artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: HDDIndexer-x86-Release
+        path: release/x86/
+
+    - name: Download MSIX artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: HDDIndexer-MSIX-Release
+        path: release/msix/
+
+    - name: Create release archives
+      run: |
+        Compress-Archive -Path "release/x64/*" -DestinationPath "HDDIndexer-x64.zip"
+        Compress-Archive -Path "release/x86/*" -DestinationPath "HDDIndexer-x86.zip"
+        if (Test-Path "release/msix") {
+          Compress-Archive -Path "release/msix/*" -DestinationPath "HDDIndexer-MSIX.zip"
+        }
+
+    - name: Generate version tag
+      id: version
+      run: |
+        $timestamp = Get-Date -Format "yyyy.MM.dd.HHmm"
+        echo "tag=v$timestamp" >> $env:GITHUB_OUTPUT
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.version.outputs.tag }}
+        name: HDDIndexer Release ${{ steps.version.outputs.tag }}
+        draft: false
+        prerelease: false
+        files: |
+          HDDIndexer-x64.zip
+          HDDIndexer-x86.zip
+          HDDIndexer-MSIX.zip
+        body: |
+          ## HDDIndexer Windows Application
+
+          **Release Date:** ${{ steps.version.outputs.tag }}
+
+          ### Downloads
+          - `HDDIndexer-x64.zip` - 64-bit Windows application
+          - `HDDIndexer-x86.zip` - 32-bit Windows application
+          - `HDDIndexer-MSIX.zip` - Microsoft Store package (unsigned)
+
+          ### Installation
+          1. Download the appropriate ZIP file for your system
+          2. Extract all files to a folder
+          3. Run `HDDIndexer.exe`
+
+          ### System Requirements
+          - Windows 10 version 1809 (build 17763) or later
+          - Windows 11 (any version)
+          - .NET 6 runtime (included in self-contained builds)
+
+          🤖 Generated with GitHub Actions
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

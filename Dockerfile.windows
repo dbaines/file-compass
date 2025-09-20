@@ -1,0 +1,30 @@
+# Dockerfile for cross-compiling Windows WinUI 3 application from Linux
+# This container provides the Windows SDK and build tools needed to compile the HDDIndexer app
+
+# Use Windows Server Core with .NET 6 SDK
+FROM mcr.microsoft.com/dotnet/sdk:6.0-windowsservercore-ltsc2022
+
+# Set the shell to PowerShell for Windows containers
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+# Install Windows App SDK
+RUN Invoke-WebRequest -Uri 'https://aka.ms/windowsappsdk/1.4/1.4.231008000/windowsappsdk-runtime-win11-x64.exe' -OutFile 'windowsappsdk.exe'; \
+    Start-Process -FilePath 'windowsappsdk.exe' -ArgumentList '/quiet' -Wait; \
+    Remove-Item 'windowsappsdk.exe'
+
+# Install Windows 10/11 SDK (for Windows App SDK dependencies)
+RUN Invoke-WebRequest -Uri 'https://download.microsoft.com/download/1/c/3/1c3d5161-d9e9-4e4b-9b43-b70fe8be268c/windowssdk/winsdksetup.exe' -OutFile 'winsdksetup.exe'; \
+    Start-Process -FilePath 'winsdksetup.exe' -ArgumentList '/quiet', '/installpath', 'C:\Program Files (x86)\Windows Kits\10', '/features', 'OptionId.WindowsDesktopDebuggers', 'OptionId.WindowsDesktopSoftwareDevelopmentKit', 'OptionId.NetFxSoftwareDevelopmentKit' -Wait; \
+    Remove-Item 'winsdksetup.exe'
+
+# Enable Windows targeting for cross-platform builds
+ENV EnableWindowsTargeting=true
+
+# Set working directory
+WORKDIR /app
+
+# Copy project files
+COPY src/ ./src/
+
+# Set the default command to build the project
+CMD ["dotnet", "build", "src/HDDIndexer/HDDIndexer.csproj", "-c", "Release", "-o", "/app/output"]

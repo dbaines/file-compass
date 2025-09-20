@@ -1,0 +1,5 @@
+/media/david/data2/work/hdd-indexer/test-build/obj/Debug/net6.0/TestCompile.csproj.AssemblyReference.cache
+/media/david/data2/work/hdd-indexer/test-build/obj/Debug/net6.0/TestCompile.GeneratedMSBuildEditorConfig.editorconfig
+/media/david/data2/work/hdd-indexer/test-build/obj/Debug/net6.0/TestCompile.AssemblyInfoInputs.cache
+/media/david/data2/work/hdd-indexer/test-build/obj/Debug/net6.0/TestCompile.AssemblyInfo.cs
+/media/david/data2/work/hdd-indexer/test-build/obj/Debug/net6.0/TestCompile.csproj.CoreCompileInputs.cache

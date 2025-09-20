@@ -1,0 +1,69 @@
+# Docker Compose configuration for cross-compiling Windows applications from Linux
+version: '3.8'
+
+services:
+  # Windows build container
+  windows-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.windows
+    platform: windows/amd64
+    volumes:
+      # Mount source code
+      - ./src:/app/src:ro
+      # Mount output directory
+      - ./build-output:/app/output
+    environment:
+      - EnableWindowsTargeting=true
+      - DOTNET_CLI_TELEMETRY_OPTOUT=1
+    command: >
+      powershell -Command "
+        Write-Host 'Starting Windows build process...';
+        dotnet restore src/HDDIndexer/HDDIndexer.csproj;
+        dotnet build src/HDDIndexer/HDDIndexer.csproj -c Release -o /app/output --no-restore;
+        Write-Host 'Build completed. Output in /app/output';
+      "
+
+  # Alternative: Publish for deployment
+  windows-publisher:
+    build:
+      context: .
+      dockerfile: Dockerfile.windows
+    platform: windows/amd64
+    volumes:
+      - ./src:/app/src:ro
+      - ./publish-output:/app/publish
+    environment:
+      - EnableWindowsTargeting=true
+      - DOTNET_CLI_TELEMETRY_OPTOUT=1
+    command: >
+      powershell -Command "
+        Write-Host 'Starting Windows publish process...';
+        dotnet restore src/HDDIndexer/HDDIndexer.csproj;
+        dotnet publish src/HDDIndexer/HDDIndexer.csproj -c Release -o /app/publish --no-restore --self-contained true -r win10-x64;
+        Write-Host 'Publish completed. Output in /app/publish';
+      "
+    profiles:
+      - publish
+
+  # MSIX package builder (requires Windows containers)
+  msix-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.windows
+    platform: windows/amd64
+    volumes:
+      - ./src:/app/src:ro
+      - ./msix-output:/app/msix
+    environment:
+      - EnableWindowsTargeting=true
+      - DOTNET_CLI_TELEMETRY_OPTOUT=1
+    command: >
+      powershell -Command "
+        Write-Host 'Starting MSIX package build...';
+        dotnet restore src/HDDIndexer/HDDIndexer.csproj;
+        dotnet publish src/HDDIndexer/HDDIndexer.csproj -c Release -o /app/msix --no-restore -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=false;
+        Write-Host 'MSIX package build completed. Output in /app/msix';
+      "
+    profiles:
+      - msix

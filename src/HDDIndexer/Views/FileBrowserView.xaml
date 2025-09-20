@@ -1,0 +1,40 @@
+<Page x:Class="HDDIndexer.Views.FileBrowserView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="File Browser" FontSize="24" FontWeight="Bold"/>
+            <TextBlock Text="Browse files and folders in your cataloged drives" FontSize="14" Opacity="0.8"/>
+        </StackPanel>
+
+        <!-- Breadcrumb -->
+        <Border Grid.Row="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="4" Padding="15,10" Margin="0,0,0,20">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <FontIcon Glyph="&#xE80F;" FontSize="16"/>
+                <TextBlock Text="No drive selected" Opacity="0.8"/>
+            </StackPanel>
+        </Border>
+
+        <!-- File List -->
+        <Border Grid.Row="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8">
+            <Grid>
+                <TextBlock Text="Select a drive to browse its contents"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          Opacity="0.6"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>
