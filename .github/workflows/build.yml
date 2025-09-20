@@ -37,21 +37,25 @@ jobs:
         msbuild -version
         echo ""
         echo "=== Windows SDK versions ==="
-        dir "C:\Program Files (x86)\Windows Kits\10\Include" 2>nul || echo "Windows Kits not found"
+        if (Test-Path "C:\Program Files (x86)\Windows Kits\10\Include") {
+          Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\Include" | Select-Object Name
+        } else {
+          echo "Windows Kits not found"
+        }
         echo ""
         echo "=== Project file content ==="
-        type src\HDDIndexer\HDDIndexer.csproj
+        Get-Content src\HDDIndexer\HDDIndexer.csproj
         echo ""
         echo "=== Checking for Package.appxmanifest ==="
         if (Test-Path "src\HDDIndexer\Package.appxmanifest") {
           echo "Package.appxmanifest found:"
-          type src\HDDIndexer\Package.appxmanifest
+          Get-Content src\HDDIndexer\Package.appxmanifest
         } else {
           echo "Package.appxmanifest not found"
         }
         echo ""
         echo "=== Current working directory contents ==="
-        dir /s /b | Select-Object -First 20
+        Get-ChildItem -Recurse -File | Select-Object -First 20 | ForEach-Object { $_.FullName }
         echo ""
 
     - name: Restore dependencies
@@ -63,15 +67,16 @@ jobs:
     - name: Verify XAML files
       run: |
         echo "=== Checking XAML files for common issues ==="
-        findstr /s /i "UniformGrid\|WrapPanel\|Toolkit:" src\HDDIndexer\**\*.xaml
-        if ($LASTEXITCODE -eq 0) {
-          echo "WARNING: Found potentially incompatible controls in XAML files"
+        $xamlIssues = Select-String -Path "src\HDDIndexer\**\*.xaml" -Pattern "(UniformGrid|WrapPanel|Toolkit:)" -AllMatches
+        if ($xamlIssues) {
+          echo "WARNING: Found potentially incompatible controls in XAML files:"
+          $xamlIssues | ForEach-Object { echo "$($_.Filename):$($_.LineNumber): $($_.Line.Trim())" }
         } else {
           echo "No obviously incompatible controls found in XAML"
         }
         echo ""
         echo "=== XAML files list ==="
-        dir src\HDDIndexer\**\*.xaml /s /b
+        Get-ChildItem -Path "src\HDDIndexer" -Filter "*.xaml" -Recurse | ForEach-Object { $_.FullName }
         echo ""
 
     - name: Build application
@@ -89,7 +94,7 @@ jobs:
           echo "=== Checking for build logs ==="
           if (Test-Path "src\HDDIndexer\obj") {
             echo "Build object directory contents:"
-            dir src\HDDIndexer\obj /s /b
+            Get-ChildItem -Path "src\HDDIndexer\obj" -Recurse | ForEach-Object { $_.FullName }
           }
           echo ""
           echo "=== Checking for XAML compilation errors ==="
@@ -117,7 +122,7 @@ jobs:
         echo ""
         echo "=== Publish output contents ==="
         if (Test-Path "publish-${{ matrix.platform }}") {
-          dir publish-${{ matrix.platform }} /s
+          Get-ChildItem -Path "publish-${{ matrix.platform }}" -Recurse | ForEach-Object { $_.FullName }
         } else {
           echo "ERROR: Publish output directory does not exist!"
           exit 1
@@ -160,7 +165,7 @@ jobs:
         echo ""
         echo "=== MSIX output contents ==="
         if (Test-Path "msix-output") {
-          dir msix-output /s
+          Get-ChildItem -Path "msix-output" -Recurse | ForEach-Object { $_.FullName }
         } else {
           echo "ERROR: MSIX output directory does not exist!"
           exit 1
