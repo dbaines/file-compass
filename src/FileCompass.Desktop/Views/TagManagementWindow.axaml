@@ -1,0 +1,105 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FileCompass.Desktop.ViewModels"
+        xmlns:local="using:FileCompass.Desktop.Converters"
+        xmlns:t="clr-namespace:FileCompass.Translations;assembly=FileCompass.Translations"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
+        x:Class="FileCompass.Desktop.Views.TagManagementWindow"
+        x:DataType="vm:TagManagementViewModel"
+        Title="{x:Static t:Strings.DialogTagsTitle}"
+        Width="500" Height="450"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+
+    <DockPanel Margin="16">
+        <!-- Add New Tag Section -->
+        <Border DockPanel.Dock="Top"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12"
+                Margin="0,0,0,16">
+            <StackPanel Spacing="8">
+                <TextBlock Text="{x:Static t:Strings.TagsAddNew}"
+                           FontWeight="SemiBold"
+                           FontSize="14"/>
+                <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,4,0,0">
+                    <TextBox Grid.Column="0"
+                             Text="{Binding NewTagName}"
+                             Watermark="{x:Static t:Strings.TagsNamePlaceholder}"
+                             Margin="0,0,8,0"/>
+                    <Button Grid.Column="1"
+                            x:Name="NewColourButton"
+                            Width="36" Height="36"
+                            Margin="0,0,8,0"
+                            ToolTip.Tip="{x:Static t:Strings.TagsSelectColour}"
+                            Click="OnNewColourClick">
+                        <Ellipse Width="20" Height="20">
+                            <Ellipse.Fill>
+                                <SolidColorBrush Color="{Binding NewTagColour, Converter={x:Static local:HexToColorConverter.Instance}}"/>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                    </Button>
+                    <Button Grid.Column="2"
+                            Content="{x:Static t:Strings.ButtonAdd}"
+                            Command="{Binding AddTagCommand}"
+                            Width="70"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- Buttons at bottom -->
+        <StackPanel DockPanel.Dock="Bottom"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,16,0,0">
+            <Button Content="{x:Static t:Strings.ButtonClose}"
+                    Click="OnCloseClick"
+                    Width="80"/>
+        </StackPanel>
+
+        <!-- Tags List -->
+        <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
+            <ScrollViewer>
+                <ItemsControl ItemsSource="{Binding Tags}" Margin="8">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="0,4"
+                                    Padding="8"
+                                    CornerRadius="4"
+                                    Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+                                <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                    <Ellipse Grid.Column="0"
+                                             Width="20" Height="20"
+                                             Margin="0,0,12,0"
+                                             VerticalAlignment="Center">
+                                        <Ellipse.Fill>
+                                            <SolidColorBrush Color="{Binding Colour, Converter={x:Static local:HexToColorConverter.Instance}}"/>
+                                        </Ellipse.Fill>
+                                    </Ellipse>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Name}"
+                                               VerticalAlignment="Center"
+                                               FontSize="14"/>
+                                    <Button Grid.Column="2"
+                                            Content="{x:Static t:Strings.ButtonEdit}"
+                                            Padding="12,6"
+                                            Margin="8,0"
+                                            Click="OnEditTagClick"/>
+                                    <Button Grid.Column="3"
+                                            Content="{x:Static t:Strings.ButtonDelete}"
+                                            Padding="12,6"
+                                            Click="OnDeleteTagClick"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+    </DockPanel>
+</Window>

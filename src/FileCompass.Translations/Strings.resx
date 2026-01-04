@@ -95,6 +95,9 @@
   <data name="MenuFileSettings" xml:space="preserve">
     <value>_Settings...</value>
   </data>
+  <data name="MenuFileTags" xml:space="preserve">
+    <value>_Tags...</value>
+  </data>
   <data name="MenuFileExit" xml:space="preserve">
     <value>E_xit</value>
   </data>
@@ -159,6 +162,9 @@
   <!-- Context Menu -->
   <data name="ContextRename" xml:space="preserve">
     <value>Rename...</value>
+  </data>
+  <data name="ContextTag" xml:space="preserve">
+    <value>Tag</value>
   </data>
   <data name="ContextRescan" xml:space="preserve">
     <value>Rescan</value>
@@ -473,6 +479,50 @@ Partial results may be lost.</value>
   </data>
   <data name="DialogUnsupportedOpenMessage" xml:space="preserve">
     <value>Cannot open this file. Only local file paths are supported.</value>
+  </data>
+
+  <!-- Tags -->
+  <data name="DialogTagsTitle" xml:space="preserve">
+    <value>Manage Tags</value>
+  </data>
+  <data name="TagsAddNew" xml:space="preserve">
+    <value>Add New Tag</value>
+  </data>
+  <data name="TagsNamePlaceholder" xml:space="preserve">
+    <value>Tag name...</value>
+  </data>
+  <data name="TagsCreateNew" xml:space="preserve">
+    <value>Create new tag...</value>
+  </data>
+  <data name="TagsSelectColour" xml:space="preserve">
+    <value>Select Colour</value>
+  </data>
+  <data name="TagsOptional" xml:space="preserve">
+    <value>Tags (optional)</value>
+  </data>
+  <data name="TagsNoTags" xml:space="preserve">
+    <value>No tags created yet</value>
+  </data>
+  <data name="DialogDeleteTagTitle" xml:space="preserve">
+    <value>Delete Tag</value>
+  </data>
+  <data name="DialogDeleteTagMessage" xml:space="preserve">
+    <value>This tag is assigned to {0} location(s). Are you sure you want to delete it?</value>
+  </data>
+  <data name="DialogDeleteTagConfirmMessage" xml:space="preserve">
+    <value>Are you sure you want to delete the tag "{0}"?</value>
+  </data>
+  <data name="ButtonAdd" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="ButtonDelete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="ButtonEdit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="ButtonSave" xml:space="preserve">
+    <value>Save</value>
   </data>
 
   <!-- File Types -->

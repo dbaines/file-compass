@@ -144,6 +144,26 @@ public class DatabaseService : IDisposable
             key TEXT PRIMARY KEY,
             value TEXT
         );
+
+        -- Tags for organizing locations
+        CREATE TABLE IF NOT EXISTS tags (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            colour TEXT NOT NULL DEFAULT '#808080',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Junction table for many-to-many relationship between locations and tags
+        CREATE TABLE IF NOT EXISTS location_tags (
+            location_id INTEGER NOT NULL,
+            tag_id INTEGER NOT NULL,
+            PRIMARY KEY (location_id, tag_id),
+            FOREIGN KEY (location_id) REFERENCES locations(id) ON DELETE CASCADE,
+            FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+        );
+
+        -- Index for efficient queries by tag
+        CREATE INDEX IF NOT EXISTS idx_location_tags_tag ON location_tags(tag_id);
         """;
 
     public void Dispose()

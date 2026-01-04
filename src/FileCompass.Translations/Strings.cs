@@ -26,6 +26,7 @@ public static class Strings
     public static string MenuFileBackupCreate => GetString("MenuFileBackupCreate");
     public static string MenuFileBackupRestore => GetString("MenuFileBackupRestore");
     public static string MenuFileSettings => GetString("MenuFileSettings");
+    public static string MenuFileTags => GetString("MenuFileTags");
     public static string MenuFileExit => GetString("MenuFileExit");
 
     // Menu - View
@@ -50,9 +51,14 @@ public static class Strings
     public static string ButtonClose => GetString("ButtonClose");
     public static string ButtonAll => GetString("ButtonAll");
     public static string ButtonNone => GetString("ButtonNone");
+    public static string ButtonAdd => GetString("ButtonAdd");
+    public static string ButtonDelete => GetString("ButtonDelete");
+    public static string ButtonEdit => GetString("ButtonEdit");
+    public static string ButtonSave => GetString("ButtonSave");
 
     // Context Menu
     public static string ContextRename => GetString("ContextRename");
+    public static string ContextTag => GetString("ContextTag");
     public static string ContextRescan => GetString("ContextRescan");
     public static string ContextCancelScan => GetString("ContextCancelScan");
     public static string ContextRemove => GetString("ContextRemove");
@@ -168,6 +174,18 @@ public static class Strings
     public static string DialogUnsupportedSaveTitle => GetString("DialogUnsupportedSaveTitle");
     public static string DialogUnsupportedSaveMessage => GetString("DialogUnsupportedSaveMessage");
     public static string DialogUnsupportedOpenMessage => GetString("DialogUnsupportedOpenMessage");
+
+    // Tags
+    public static string DialogTagsTitle => GetString("DialogTagsTitle");
+    public static string TagsAddNew => GetString("TagsAddNew");
+    public static string TagsNamePlaceholder => GetString("TagsNamePlaceholder");
+    public static string TagsCreateNew => GetString("TagsCreateNew");
+    public static string TagsSelectColour => GetString("TagsSelectColour");
+    public static string TagsOptional => GetString("TagsOptional");
+    public static string TagsNoTags => GetString("TagsNoTags");
+    public static string DialogDeleteTagTitle => GetString("DialogDeleteTagTitle");
+    public static string DialogDeleteTagMessage => GetString("DialogDeleteTagMessage");
+    public static string DialogDeleteTagConfirmMessage => GetString("DialogDeleteTagConfirmMessage");
 
     // File Types
     public static string FiletypeCsv => GetString("FiletypeCsv");

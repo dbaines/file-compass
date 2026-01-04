@@ -26,5 +26,7 @@ public class Location
     public LocationStatus Status { get; set; } = LocationStatus.NeverScanned;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    public IList<Tag> Tags { get; set; } = [];
+
     public string DisplayName => CustomName ?? VolumeLabel ?? System.IO.Path.GetFileName(Path) ?? Path;
 }

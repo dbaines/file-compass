@@ -358,9 +358,17 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         SearchHistory = new ObservableCollection<string>(history);
     }
 
-    private async Task LoadLocationsAsync()
+    public async Task LoadLocationsAsync()
     {
         var locations = await ServiceLocator.LocationRepository.GetAllAsync();
+
+        // Load tags for each location
+        foreach (var location in locations)
+        {
+            var tags = await ServiceLocator.LocationTagRepository.GetTagsForLocationAsync(location.Id);
+            location.Tags = tags.ToList();
+        }
+
         Locations = new ObservableCollection<Location>(locations);
     }
 

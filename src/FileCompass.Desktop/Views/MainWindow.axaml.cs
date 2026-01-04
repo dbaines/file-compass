@@ -232,6 +232,19 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void OnTagsManagementClick(object? sender, RoutedEventArgs e)
+    {
+        var vm = new TagManagementViewModel();
+        await vm.LoadTagsAsync();
+        var dialog = new TagManagementWindow { DataContext = vm };
+        await dialog.ShowDialog(this);
+
+        if (DataContext is MainWindowViewModel mainVm)
+        {
+            await mainVm.LoadLocationsAsync();
+        }
+    }
+
     private async void OnThemeSystemClick(object? sender, RoutedEventArgs e)
     {
         await ServiceLocator.ThemeService.SetThemeAsync(AppTheme.System);
@@ -361,10 +374,11 @@ public partial class MainWindow : Window
 
             if (result.IsNewLocation)
             {
-                var customName = await ShowNamePromptDialogAsync(path);
-                if (customName is null) return;
+                var promptResult = await ShowNamePromptDialogAsync(path);
+                if (promptResult is null) return;
 
-                await vm.AddLocationAsync(path, customName, forceNew: true);
+                await vm.AddLocationAsync(path, promptResult.Name, forceNew: true);
+                await AssignTagsToNewLocationAsync(path, promptResult.TagIds, vm);
             }
             else if (result.RescanLocationId.HasValue)
             {
@@ -373,10 +387,24 @@ public partial class MainWindow : Window
         }
         else
         {
-            var customName = await ShowNamePromptDialogAsync(path);
-            if (customName is null) return;
+            var promptResult = await ShowNamePromptDialogAsync(path);
+            if (promptResult is null) return;
 
-            await vm.AddLocationAsync(path, customName);
+            await vm.AddLocationAsync(path, promptResult.Name);
+            await AssignTagsToNewLocationAsync(path, promptResult.TagIds, vm);
+        }
+    }
+
+    private static async Task AssignTagsToNewLocationAsync(string path, List<long> tagIds, MainWindowViewModel vm)
+    {
+        if (tagIds.Count == 0) return;
+
+        // Find the newly created location by path
+        var location = await ServiceLocator.LocationRepository.GetByPathAsync(path);
+        if (location is not null)
+        {
+            await ServiceLocator.LocationTagRepository.SetTagsForLocationAsync(location.Id, tagIds);
+            await vm.LoadLocationsAsync();
         }
     }
 
@@ -525,14 +553,16 @@ public partial class MainWindow : Window
         return result;
     }
 
-    private async Task<string?> ShowNamePromptDialogAsync(string path)
+    private sealed record NameAndTagsResult(string Name, List<long> TagIds);
+
+    private async Task<NameAndTagsResult?> ShowNamePromptDialogAsync(string path)
     {
         // Default name: last segment of path, or full path for root drives
         var defaultName = System.IO.Path.GetFileName(path);
         if (string.IsNullOrEmpty(defaultName))
             defaultName = path;
 
-        string? result = null;
+        NameAndTagsResult? result = null;
 
         var textBox = new TextBox
         {
@@ -540,56 +570,104 @@ public partial class MainWindow : Window
             Margin = new Avalonia.Thickness(0, 8, 0, 0)
         };
 
-        var dialog = new Window
+        // Load available tags
+        var allTags = await ServiceLocator.TagRepository.GetAllAsync();
+        var tagCheckBoxes = new List<(CheckBox cb, long tagId)>();
+
+        var contentPanel = new StackPanel
         {
-            Title = Strings.DialogNameLocationTitle,
-            Width = 400,
-            Height = 170,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            Content = new StackPanel
+            Margin = new Avalonia.Thickness(16),
+            Children =
             {
-                Margin = new Avalonia.Thickness(16),
-                Children =
+                new TextBlock { Text = Strings.DialogNameLocationLabel },
+                textBox,
+                new TextBlock
                 {
-                    new TextBlock { Text = Strings.DialogNameLocationLabel },
-                    textBox,
-                    new TextBlock
-                    {
-                        Text = path,
-                        FontSize = 11,
-                        Foreground = Avalonia.Media.Brushes.Gray,
-                        Margin = new Avalonia.Thickness(0, 4, 0, 0)
-                    },
-                    new StackPanel
-                    {
-                        Orientation = Avalonia.Layout.Orientation.Horizontal,
-                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
-                        Margin = new Avalonia.Thickness(0, 16, 0, 0),
-                        Spacing = 8,
-                        Children =
-                        {
-                            new Button { Content = Strings.ButtonCancel, Tag = "cancel" },
-                            new Button { Content = Strings.ButtonOk, Tag = "ok" }
-                        }
-                    }
+                    Text = path,
+                    FontSize = 11,
+                    Foreground = Avalonia.Media.Brushes.Gray,
+                    Margin = new Avalonia.Thickness(0, 4, 0, 0)
                 }
             }
         };
 
-        if (dialog.Content is StackPanel panel && panel.Children[3] is StackPanel buttonPanel)
+        // Add tag selection if tags exist
+        if (allTags.Count > 0)
         {
-            foreach (var child in buttonPanel.Children)
+            var tagsLabel = new TextBlock
             {
-                if (child is Button button)
+                Text = Strings.TagsOptional,
+                Margin = new Avalonia.Thickness(0, 12, 0, 4)
+            };
+            contentPanel.Children.Add(tagsLabel);
+
+            var tagPanel = new WrapPanel { Orientation = Avalonia.Layout.Orientation.Horizontal };
+            foreach (var tag in allTags)
+            {
+                var ellipse = new Avalonia.Controls.Shapes.Ellipse
                 {
-                    button.Click += (s, args) =>
+                    Width = 12,
+                    Height = 12,
+                    Fill = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(tag.Colour)),
+                    Margin = new Avalonia.Thickness(0, 0, 4, 0)
+                };
+
+                var cb = new CheckBox
+                {
+                    Content = new StackPanel
                     {
-                        if (string.Equals(button.Tag?.ToString(), "ok", StringComparison.Ordinal))
-                            result = textBox.Text;
-                        dialog.Close();
-                    };
-                }
+                        Orientation = Avalonia.Layout.Orientation.Horizontal,
+                        Children = { ellipse, new TextBlock { Text = tag.Name } }
+                    },
+                    Margin = new Avalonia.Thickness(0, 0, 12, 4)
+                };
+                tagCheckBoxes.Add((cb, tag.Id));
+                tagPanel.Children.Add(cb);
+            }
+            contentPanel.Children.Add(tagPanel);
+        }
+
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Margin = new Avalonia.Thickness(0, 16, 0, 0),
+            Spacing = 8,
+            Children =
+            {
+                new Button { Content = Strings.ButtonCancel, Tag = "cancel" },
+                new Button { Content = Strings.ButtonOk, Tag = "ok" }
+            }
+        };
+        contentPanel.Children.Add(buttonPanel);
+
+        var dialogHeight = allTags.Count > 0 ? 250 : 170;
+        var dialog = new Window
+        {
+            Title = Strings.DialogNameLocationTitle,
+            Width = 450,
+            Height = dialogHeight,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = false,
+            Content = contentPanel
+        };
+
+        foreach (var child in buttonPanel.Children)
+        {
+            if (child is Button button)
+            {
+                button.Click += (s, args) =>
+                {
+                    if (string.Equals(button.Tag?.ToString(), "ok", StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(textBox.Text))
+                    {
+                        var selectedTagIds = tagCheckBoxes
+                            .Where(x => x.cb.IsChecked == true)
+                            .Select(x => x.tagId)
+                            .ToList();
+                        result = new NameAndTagsResult(textBox.Text, selectedTagIds);
+                    }
+                    dialog.Close();
+                };
             }
         }
 
@@ -862,7 +940,7 @@ public partial class MainWindow : Window
         await dialog.ShowDialog(this);
     }
 
-    private void OnLocationContextMenuOpening(object? sender, System.ComponentModel.CancelEventArgs e)
+    private async void OnLocationContextMenuOpening(object? sender, System.ComponentModel.CancelEventArgs e)
     {
         if (DataContext is not MainWindowViewModel vm) return;
 
@@ -883,10 +961,93 @@ public partial class MainWindow : Window
 
         var isScanning = targetLocation.Status == FileCompass.Core.Models.LocationStatus.Scanning;
         RenameMenuItem.IsVisible = !isScanning;
+        TagMenuItem.IsVisible = !isScanning;
         RescanMenuItem.IsVisible = !isScanning;
         CancelScanMenuItem.IsVisible = isScanning;
         LocationMenuSeparator.IsVisible = !isScanning;
         RemoveMenuItem.IsVisible = !isScanning;
+
+        // Build Tag submenu dynamically
+        await BuildTagSubmenuAsync(targetLocation, vm);
+    }
+
+    private async Task BuildTagSubmenuAsync(FileCompass.Core.Models.Location targetLocation, MainWindowViewModel vm)
+    {
+        TagMenuItem.Items.Clear();
+
+        var allTags = await ServiceLocator.TagRepository.GetAllAsync();
+        var locationTags = await ServiceLocator.LocationTagRepository.GetTagsForLocationAsync(targetLocation.Id);
+        var assignedTagIds = locationTags.Select(t => t.Id).ToHashSet();
+
+        foreach (var tag in allTags)
+        {
+            var isAssigned = assignedTagIds.Contains(tag.Id);
+            var tagId = tag.Id;
+            var locationId = targetLocation.Id;
+
+            var ellipse = new Avalonia.Controls.Shapes.Ellipse
+            {
+                Width = 12,
+                Height = 12,
+                Fill = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(tag.Colour)),
+                Margin = new Avalonia.Thickness(0, 0, 8, 0)
+            };
+
+            var textBlock = new TextBlock { Text = tag.Name };
+
+            var headerPanel = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Children = { ellipse, textBlock }
+            };
+
+            var menuItem = new MenuItem
+            {
+                Header = headerPanel,
+                Icon = isAssigned ? new Avalonia.Controls.Shapes.Ellipse
+                {
+                    Width = 8,
+                    Height = 8,
+                    Fill = Avalonia.Media.Brushes.LimeGreen
+                } : null
+            };
+
+            menuItem.Click += async (s, args) =>
+            {
+                if (isAssigned)
+                    await ServiceLocator.LocationTagRepository.UnassignTagAsync(locationId, tagId);
+                else
+                    await ServiceLocator.LocationTagRepository.AssignTagAsync(locationId, tagId);
+
+                await vm.LoadLocationsAsync();
+            };
+
+            TagMenuItem.Items.Add(menuItem);
+        }
+
+        // Add separator and "Create new tag..." option
+        if (allTags.Count > 0)
+        {
+            TagMenuItem.Items.Add(new Separator());
+        }
+
+        var createNewItem = new MenuItem { Header = Strings.TagsCreateNew };
+        createNewItem.Click += async (s, args) =>
+        {
+            var tagVm = new TagManagementViewModel();
+            await tagVm.LoadTagsAsync();
+            var dialog = new TagManagementWindow { DataContext = tagVm };
+            await dialog.ShowDialog(this);
+
+            // If a new tag was created, assign it to this location
+            if (tagVm.NewlyCreatedTag is not null)
+            {
+                await ServiceLocator.LocationTagRepository.AssignTagAsync(targetLocation.Id, tagVm.NewlyCreatedTag.Id);
+            }
+
+            await vm.LoadLocationsAsync();
+        };
+        TagMenuItem.Items.Add(createNewItem);
     }
 
     private async void OnCancelScanClick(object? sender, RoutedEventArgs e)
