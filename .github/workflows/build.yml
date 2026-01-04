@@ -3,6 +3,12 @@ name: Build
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 0.2.0)'
+        required: true
+        type: string
 
 jobs:
   build-and-test:
@@ -26,6 +32,7 @@ jobs:
 
   publish-linux:
     needs: build-and-test
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,16 +46,17 @@ jobs:
         run: dotnet publish src/FileCompass.Desktop/FileCompass.Desktop.csproj -c Release -r linux-x64 --self-contained -o ./publish
 
       - name: Rename executable
-        run: mv ./publish/FileCompass ./publish/FileCompass-linux-x64-0.1.0
+        run: mv ./publish/FileCompass ./publish/FileCompass-linux-x64-${{ inputs.version }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: FileCompass-linux-x64-0.1.0
+          name: FileCompass-linux-x64-${{ inputs.version }}
           path: ./publish
 
   publish-windows:
     needs: build-and-test
+    if: github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -62,10 +70,41 @@ jobs:
         run: dotnet publish src/FileCompass.Desktop/FileCompass.Desktop.csproj -c Release -r win-x64 --self-contained -o ./publish
 
       - name: Rename executable
-        run: ren .\publish\FileCompass.exe FileCompass-win-x64-0.1.0.exe
+        run: ren .\publish\FileCompass.exe FileCompass-win-x64-${{ inputs.version }}.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: FileCompass-win-x64-0.1.0
+          name: FileCompass-win-x64-${{ inputs.version }}
           path: ./publish
+
+  release:
+    needs: [publish-linux, publish-windows]
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: FileCompass-linux-x64-${{ inputs.version }}
+          path: ./artifacts/linux
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: FileCompass-win-x64-${{ inputs.version }}
+          path: ./artifacts/windows
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: FileCompass v${{ inputs.version }}
+          generate_release_notes: true
+          files: |
+            ./artifacts/linux/FileCompass-linux-x64-${{ inputs.version }}
+            ./artifacts/windows/FileCompass-win-x64-${{ inputs.version }}.exe

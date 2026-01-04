@@ -1,6 +1,6 @@
 # FileCompass
 
-[![Build](https://github.com/dbaines/hdd-indexer/actions/workflows/build.yml/badge.svg)](https://github.com/dbaines/hdd-indexer/actions/workflows/build.yml)
+[![Build](https://github.com/dbaines/file-compass/actions/workflows/build.yml/badge.svg)](https://github.com/dbaines/file-compass/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET 9](https://img.shields.io/badge/.NET-9.0-purple.svg)](https://dotnet.microsoft.com/download/dotnet/9.0)
 
@@ -74,6 +74,30 @@ dotnet test --collect:"XPlat Code Coverage"
 # Run a specific test class
 dotnet test --filter "FullyQualifiedName~DatabaseServiceTests"
 ```
+
+## Releasing
+
+### Version Management
+
+The application version is stored in two files:
+- `src/FileCompass.Desktop/FileCompass.Desktop.csproj` - Assembly version
+- `src/FileCompass.Core/Constants/AppConstants.cs` - Displayed version
+
+Use the bump script to update both files:
+
+```bash
+./scripts/bump-version.sh 0.2.0
+```
+
+### Creating a Release
+
+1. Bump the version: `./scripts/bump-version.sh <version>`
+2. Commit: `git commit -am "Bump version to <version>"`
+3. Push: `git push`
+4. Go to Actions > Build > Run workflow
+5. Enter the version (e.g., `0.2.0`) and click "Run workflow"
+
+The workflow will build, create a git tag, and publish a GitHub Release with binaries.
 
 ## Usage
 

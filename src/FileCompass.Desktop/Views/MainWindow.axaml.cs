@@ -251,7 +251,7 @@ public partial class MainWindow : Window
     {
         var githubLink = new Button
         {
-            Content = "github.com/dbaines/hdd-indexer",
+            Content = "github.com/dbaines/file-compass",
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             Padding = new Avalonia.Thickness(0),
             Background = Avalonia.Media.Brushes.Transparent,
@@ -264,7 +264,7 @@ public partial class MainWindow : Window
             {
                 var psi = new System.Diagnostics.ProcessStartInfo
                 {
-                    FileName = "https://github.com/dbaines/hdd-indexer",
+                    FileName = "https://github.com/dbaines/file-compass",
                     UseShellExecute = true
                 };
                 System.Diagnostics.Process.Start(psi);
