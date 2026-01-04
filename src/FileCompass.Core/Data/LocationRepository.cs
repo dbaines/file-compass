@@ -74,7 +74,7 @@ public class LocationRepository
         var conn = await _db.GetConnectionAsync();
         using var cmd = conn.CreateCommand();
 
-        cmd.CommandText = "SELECT * FROM locations WHERE path = @path ORDER BY custom_name, created_at";
+        cmd.CommandText = "SELECT * FROM locations WHERE path = @path ORDER BY custom_name COLLATE NOCASE, created_at";
         cmd.Parameters.AddWithValue("@path", path);
 
         var locations = new List<Location>();
@@ -91,7 +91,7 @@ public class LocationRepository
         var conn = await _db.GetConnectionAsync();
         using var cmd = conn.CreateCommand();
 
-        cmd.CommandText = "SELECT * FROM locations ORDER BY custom_name, path";
+        cmd.CommandText = "SELECT * FROM locations ORDER BY custom_name COLLATE NOCASE, path COLLATE NOCASE";
 
         var locations = new List<Location>();
         using var reader = await cmd.ExecuteReaderAsync();
