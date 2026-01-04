@@ -258,6 +258,9 @@ public class FileScannerServiceTests : IDisposable
         var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
         await scanner.ScanLocationAsync("/test", null, false, progress);
 
+        // Give progress a moment to propagate (Progress<T> posts callbacks asynchronously)
+        await Task.Delay(50);
+
         // Should have at least one progress report (final completion)
         Assert.NotEmpty(progressReports);
 
