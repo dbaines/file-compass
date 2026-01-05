@@ -15,7 +15,8 @@ This application is entirely vibe-coded using Claude Code
 - **Scan & Index**: Quickly scan folders and drives to create a searchable file catalog
 - **Cross-Location Search**: Search across all indexed locations simultaneously
 - **Advanced Search**: Filter by file type, size range, date modified, and more
-- **Multiple Export Formats**: Export your file catalog to CSV, PDF, Excel, or HTML
+- **Multiple Export Formats**: Export your file catalog to CSV, Excel, or HTML
+- **Location Tagging**: Organize your indexed locations with custom tags
 - **Backup & Restore**: Create portable backups of your catalog to share or restore
 - **Theme Support**: Light, dark, and system theme options
 - **Keyboard Navigation**: Full keyboard shortcuts for power users
@@ -104,7 +105,7 @@ The workflow will build, create a git tag, and publish a GitHub Release with bin
 1. **Add a Location**: Click the "+" button or use File > Add Location to select a folder or drive to index
 2. **Wait for Scan**: The application will scan all files and folders in the selected location
 3. **Search**: Use the search box to find files across all indexed locations
-4. **Export**: Export your results to CSV, PDF, Excel, or HTML via File > Export
+4. **Export**: Export your results to CSV, Excel, or HTML via File > Export
 
 ### Keyboard Shortcuts
 
@@ -121,7 +122,6 @@ The workflow will build, create a git tag, and publish a GitHub Release with bin
 - **.NET 9**: Cross-platform runtime
 - **Avalonia UI 11**: Cross-platform XAML-based UI framework
 - **SQLite**: Local database with FTS5 full-text search
-- **QuestPDF**: PDF generation
 - **ClosedXML**: Excel export
 
 ## Project Structure
@@ -129,11 +129,11 @@ The workflow will build, create a git tag, and publish a GitHub Release with bin
 ```
 file-compass/
 ├── src/
-│   ├── FileCompass.Core/      # Business logic, models, services
-│   ├── FileCompass.Desktop/   # Avalonia UI application
-│   └── FileCompass.Tests/     # Unit tests
+│   ├── FileCompass.Core/         # Business logic, models, services
+│   ├── FileCompass.Desktop/      # Avalonia UI application
+│   ├── FileCompass.Tests/        # Unit tests
+│   └── FileCompass.Translations/ # Localization resources
 ├── plan/
-│   └── plan.md               # Development plan
 └── README.md
 ```
 
