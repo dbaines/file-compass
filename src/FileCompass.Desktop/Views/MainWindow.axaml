@@ -355,6 +355,7 @@
                           CanUserResizeColumns="True"
                           CanUserSortColumns="True"
                           GridLinesVisibility="Horizontal"
+                          RowHeight="28"
                           IsVisible="{Binding ShowFileList}">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
