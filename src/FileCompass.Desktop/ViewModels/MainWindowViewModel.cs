@@ -629,7 +629,6 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             {
                 SearchTerm = SearchText,
                 LocationId = SelectedLocation?.Id,
-                MaxResults = 1000,
                 IncludeDirectories = true
             };
 

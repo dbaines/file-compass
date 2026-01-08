@@ -11,7 +11,7 @@ public class SearchQuery
     public DateTime? ModifiedAfter { get; set; }
     public DateTime? ModifiedBefore { get; set; }
     public bool IncludeDirectories { get; set; }
-    public int MaxResults { get; set; } = 1000;
+    public int MaxResults { get; set; } = -1; // -1 means no limit
     public int Offset { get; set; }
 
     public bool HasFilters =>

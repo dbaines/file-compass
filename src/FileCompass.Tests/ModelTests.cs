@@ -183,7 +183,7 @@ public class SearchQueryModelTests
     {
         var query = new SearchQuery();
 
-        Assert.Equal(1000, query.MaxResults);
+        Assert.Equal(-1, query.MaxResults); // -1 means no limit
         Assert.Equal(0, query.Offset);
         Assert.False(query.IncludeDirectories);
         Assert.Null(query.SearchTerm);

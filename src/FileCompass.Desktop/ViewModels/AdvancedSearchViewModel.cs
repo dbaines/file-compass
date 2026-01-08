@@ -91,8 +91,7 @@ public partial class AdvancedSearchViewModel : ViewModelBase
             ModifiedAfter = ModifiedAfter,
             ModifiedBefore = ModifiedBefore,
             LocationId = SelectedLocation?.Id,
-            IncludeDirectories = IncludeDirectories,
-            MaxResults = 1000
+            IncludeDirectories = IncludeDirectories
         };
     }
 
