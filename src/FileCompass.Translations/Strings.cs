@@ -47,6 +47,8 @@ public static class Strings
     public static string ButtonRefresh => GetString("ButtonRefresh");
     public static string ButtonExport => GetString("ButtonExport");
     public static string ButtonCancel => GetString("ButtonCancel");
+    public static string ButtonPause => GetString("ButtonPause");
+    public static string ButtonResume => GetString("ButtonResume");
     public static string ButtonOk => GetString("ButtonOk");
     public static string ButtonClose => GetString("ButtonClose");
     public static string ButtonAll => GetString("ButtonAll");
@@ -115,6 +117,8 @@ public static class Strings
     public static string StatusScanProgress => GetString("StatusScanProgress");
     public static string StatusScanComplete => GetString("StatusScanComplete");
     public static string StatusScanCancelled => GetString("StatusScanCancelled");
+    public static string StatusScanPaused => GetString("StatusScanPaused");
+    public static string StatusScanResumed => GetString("StatusScanResumed");
     public static string StatusExportingCsv => GetString("StatusExportingCsv");
     public static string StatusExportingExcel => GetString("StatusExportingExcel");
     public static string StatusExportingHtml => GetString("StatusExportingHtml");

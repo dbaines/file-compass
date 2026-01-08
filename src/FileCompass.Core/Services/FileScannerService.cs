@@ -5,12 +5,17 @@ using FileCompass.Core.Models;
 
 namespace FileCompass.Core.Services;
 
-public class FileScannerService
+public class FileScannerService : IDisposable
 {
     private readonly IFileSystem _fileSystem;
     private readonly DatabaseService _db;
     private readonly LocationRepository _locationRepo;
     private readonly FileRepository _fileRepo;
+    private ManualResetEventSlim? _pauseEvent;
+    private bool _isPaused;
+    private bool _disposed;
+
+    public bool IsPaused => _isPaused;
 
     public FileScannerService(
         IFileSystem fileSystem,
@@ -22,6 +27,18 @@ public class FileScannerService
         _db = db;
         _locationRepo = locationRepo;
         _fileRepo = fileRepo;
+    }
+
+    public void Pause()
+    {
+        _isPaused = true;
+        _pauseEvent?.Reset();
+    }
+
+    public void Resume()
+    {
+        _isPaused = false;
+        _pauseEvent?.Set();
     }
 
     public async Task<Location> ScanLocationAsync(
@@ -76,6 +93,11 @@ public class FileScannerService
         IProgress<ScanProgress>? progress,
         CancellationToken cancellationToken)
     {
+        // Initialize pause event for this scan session
+        _pauseEvent?.Dispose();
+        _pauseEvent = new ManualResetEventSlim(true); // Start in signaled (running) state
+        _isPaused = false;
+
         // Update status to scanning
         location.Status = LocationStatus.Scanning;
         location.LastScanStart = DateTime.UtcNow;
@@ -127,10 +149,12 @@ public class FileScannerService
         {
             location.TotalFiles = scanProgress.FilesScanned;
             location.TotalFolders = scanProgress.FoldersScanned;
-            location.Status = LocationStatus.Outdated;
+            // Set status to Paused if it was paused, otherwise Outdated (cancelled)
+            location.Status = _isPaused ? LocationStatus.Paused : LocationStatus.Outdated;
             await _locationRepo.UpdateAsync(location);
 
             scanProgress.IsCancelled = true;
+            scanProgress.IsPaused = _isPaused;
             progress?.Report(scanProgress);
 
             throw;
@@ -189,6 +213,9 @@ public class FileScannerService
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        // Wait if paused (blocks until Resume() is called or cancellation requested)
+        _pauseEvent?.Wait(cancellationToken);
+
         IEnumerable<IFileSystemInfo> entries;
         try
         {
@@ -211,6 +238,9 @@ public class FileScannerService
         foreach (var entry in entries)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
+            // Wait if paused (blocks until Resume() is called or cancellation requested)
+            _pauseEvent?.Wait(cancellationToken);
 
             try
             {
@@ -354,5 +384,25 @@ public class FileScannerService
         cmd.Parameters.AddWithValue("@occurredAt", DateTime.UtcNow.ToString("o"));
 
         await cmd.ExecuteNonQueryAsync();
+    }
+
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+            return;
+
+        if (disposing)
+        {
+            _pauseEvent?.Dispose();
+            _pauseEvent = null;
+        }
+
+        _disposed = true;
     }
 }

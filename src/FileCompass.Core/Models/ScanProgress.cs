@@ -11,6 +11,7 @@ public class ScanProgress
     public DateTime StartTime { get; set; }
     public bool IsComplete { get; set; }
     public bool IsCancelled { get; set; }
+    public bool IsPaused { get; set; }
 
     public TimeSpan ElapsedTime => DateTime.UtcNow - StartTime;
 
@@ -22,6 +23,7 @@ public class ScanProgress
     {
         get
         {
+            if (IsPaused) return $"Paused: {FilesScanned:N0} files, {FoldersScanned:N0} folders";
             if (IsCancelled) return "Cancelled";
             if (IsComplete) return $"Complete: {FilesScanned:N0} files, {FoldersScanned:N0} folders";
             return $"Scanning: {FilesScanned:N0} files ({FilesPerSecond:N0}/sec)";

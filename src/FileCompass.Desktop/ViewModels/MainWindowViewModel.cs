@@ -42,6 +42,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private bool _isScanning;
 
     [ObservableProperty]
+    private bool _isScanPaused;
+
+    [ObservableProperty]
     private double _scanProgress;
 
     [ObservableProperty]
@@ -571,6 +574,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
                 {
                     _scanningLocationId = null;
                     IsScanning = false;
+                    IsScanPaused = false;
                     _scanCts?.Dispose();
                     _scanCts = null;
                     OnPropertyChanged(nameof(CanAddLocation));
@@ -611,6 +615,22 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private void CancelScan()
     {
         _scanCts?.Cancel();
+    }
+
+    [RelayCommand]
+    private void PauseScan()
+    {
+        ServiceLocator.FileScannerService.Pause();
+        IsScanPaused = true;
+        StatusMessage = Strings.StatusScanPaused;
+    }
+
+    [RelayCommand]
+    private void ResumeScan()
+    {
+        ServiceLocator.FileScannerService.Resume();
+        IsScanPaused = false;
+        StatusMessage = Strings.StatusScanResumed;
     }
 
     [RelayCommand]

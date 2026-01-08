@@ -146,6 +146,12 @@
   <data name="ButtonCancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="ButtonPause" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="ButtonResume" xml:space="preserve">
+    <value>Resume</value>
+  </data>
   <data name="ButtonOk" xml:space="preserve">
     <value>OK</value>
   </data>
@@ -308,6 +314,12 @@ Try adjusting your filters or search term.</value>
   </data>
   <data name="StatusScanCancelled" xml:space="preserve">
     <value>Scan cancelled</value>
+  </data>
+  <data name="StatusScanPaused" xml:space="preserve">
+    <value>Scan paused</value>
+  </data>
+  <data name="StatusScanResumed" xml:space="preserve">
+    <value>Scan resumed</value>
   </data>
   <data name="StatusExportingCsv" xml:space="preserve">
     <value>Exporting to CSV...</value>

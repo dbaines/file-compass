@@ -4,6 +4,7 @@ public enum LocationStatus
 {
     NeverScanned,
     Scanning,
+    Paused,
     UpToDate,
     Outdated,
     Offline
