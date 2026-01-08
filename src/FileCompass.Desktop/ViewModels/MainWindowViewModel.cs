@@ -107,7 +107,23 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     public MainWindowViewModel()
     {
-        _ = InitializeAsync();
+        SafeFireAndForget(InitializeAsync());
+    }
+
+    /// <summary>
+    /// Safely executes an async task, catching and logging any exceptions.
+    /// Use for fire-and-forget async operations that shouldn't crash the app.
+    /// </summary>
+    private static async void SafeFireAndForget(Task task)
+    {
+        try
+        {
+            await task;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Fire-and-forget async error: {ex}");
+        }
     }
 
     private async Task InitializeAsync()
@@ -160,19 +176,19 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         await ServiceLocator.SettingsRepository.SetColumnVisibilityAsync(visibility);
     }
 
-    partial void OnIsIconColumnVisibleChanged(bool value) => _ = SaveColumnVisibilityAsync();
-    partial void OnIsNameColumnVisibleChanged(bool value) => _ = SaveColumnVisibilityAsync();
-    partial void OnIsSizeColumnVisibleChanged(bool value) => _ = SaveColumnVisibilityAsync();
-    partial void OnIsTypeColumnVisibleChanged(bool value) => _ = SaveColumnVisibilityAsync();
-    partial void OnIsModifiedColumnVisibleChanged(bool value) => _ = SaveColumnVisibilityAsync();
-    partial void OnIsPathColumnVisibleChanged(bool value) => _ = SaveColumnVisibilityAsync();
+    partial void OnIsIconColumnVisibleChanged(bool value) => SafeFireAndForget(SaveColumnVisibilityAsync());
+    partial void OnIsNameColumnVisibleChanged(bool value) => SafeFireAndForget(SaveColumnVisibilityAsync());
+    partial void OnIsSizeColumnVisibleChanged(bool value) => SafeFireAndForget(SaveColumnVisibilityAsync());
+    partial void OnIsTypeColumnVisibleChanged(bool value) => SafeFireAndForget(SaveColumnVisibilityAsync());
+    partial void OnIsModifiedColumnVisibleChanged(bool value) => SafeFireAndForget(SaveColumnVisibilityAsync());
+    partial void OnIsPathColumnVisibleChanged(bool value) => SafeFireAndForget(SaveColumnVisibilityAsync());
 
     partial void OnIsLoadingFilesChanged(bool value) => NotifyEmptyStateChanged();
 
     partial void OnShowDirectoriesChanged(bool value)
     {
-        _ = ApplyFiltersAsync();
-        _ = ServiceLocator.SettingsRepository.SetAsync("show_directories", value.ToString());
+        SafeFireAndForget(ApplyFiltersAsync());
+        SafeFireAndForget(ServiceLocator.SettingsRepository.SetAsync("show_directories", value.ToString()));
     }
 
     private async Task LoadFileTypeFiltersAsync()
@@ -221,8 +237,8 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     private void OnFileTypeFilterChanged()
     {
-        _ = ApplyFiltersAsync();
-        _ = SaveFileTypeFiltersAsync();
+        SafeFireAndForget(ApplyFiltersAsync());
+        SafeFireAndForget(SaveFileTypeFiltersAsync());
         OnPropertyChanged(nameof(FileTypeFilterText));
     }
 
@@ -378,11 +394,11 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
-            _ = SearchAsync();
+            SafeFireAndForget(SearchAsync());
         }
         else if (value is not null)
         {
-            _ = LoadFilesForLocationAsync(value);
+            SafeFireAndForget(LoadFilesForLocationAsync(value));
         }
         else
         {
@@ -499,7 +515,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             StatusMessage = string.Format(CultureInfo.CurrentCulture, Strings.StatusScanProgress, p.CurrentPath);
         });
 
-        _ = Task.Run(async () =>
+        SafeFireAndForget(Task.Run(async () =>
         {
             try
             {
@@ -541,7 +557,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
                     OnPropertyChanged(nameof(CanAddLocation));
                 });
             }
-        });
+        }));
     }
 
     public async Task RescanLocationAsync(long locationId)
