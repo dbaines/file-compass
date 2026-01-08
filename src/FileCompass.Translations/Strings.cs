@@ -89,6 +89,7 @@ public static class Strings
     public static string EmptyNoResultsMessage => GetString("EmptyNoResultsMessage");
 
     // Loading
+    public static string Loading => GetString("Loading");
     public static string LoadingFiles => GetString("LoadingFiles");
 
     // DataGrid Columns

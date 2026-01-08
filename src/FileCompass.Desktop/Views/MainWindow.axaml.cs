@@ -991,10 +991,15 @@ public partial class MainWindow : Window
 
     private async Task BuildTagSubmenuAsync(FileCompass.Core.Models.Location targetLocation, MainWindowViewModel vm)
     {
+        // Show loading placeholder to prevent empty menu flicker
         TagMenuItem.Items.Clear();
+        TagMenuItem.Items.Add(new MenuItem { Header = Strings.Loading, IsEnabled = false });
 
         var allTags = await ServiceLocator.TagRepository.GetAllAsync();
         var locationTags = await ServiceLocator.LocationTagRepository.GetTagsForLocationAsync(targetLocation.Id);
+
+        // Clear loading placeholder and populate with actual items
+        TagMenuItem.Items.Clear();
         var assignedTagIds = locationTags.Select(t => t.Id).ToHashSet();
 
         foreach (var tag in allTags)

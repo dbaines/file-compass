@@ -239,6 +239,9 @@ Try adjusting your filters or search term.</value>
   </data>
 
   <!-- Loading -->
+  <data name="Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
   <data name="LoadingFiles" xml:space="preserve">
     <value>Loading files...</value>
   </data>
