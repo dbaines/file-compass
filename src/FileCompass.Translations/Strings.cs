@@ -63,6 +63,7 @@ public static class Strings
     public static string ContextTag => GetString("ContextTag");
     public static string ContextRescan => GetString("ContextRescan");
     public static string ContextCancelScan => GetString("ContextCancelScan");
+    public static string ContextViewErrors => GetString("ContextViewErrors");
     public static string ContextRemove => GetString("ContextRemove");
 
     // Locations Panel
@@ -262,4 +263,11 @@ public static class Strings
     public static string CategoryCode => GetString("CategoryCode");
     public static string CategoryExecutables => GetString("CategoryExecutables");
     public static string CategoryOther => GetString("CategoryOther");
+
+    // Scan Errors
+    public static string ScanErrorsTitle => GetString("ScanErrorsTitle");
+    public static string ScanErrorsNoErrors => GetString("ScanErrorsNoErrors");
+    public static string ScanErrorsColumnPath => GetString("ScanErrorsColumnPath");
+    public static string ScanErrorsColumnError => GetString("ScanErrorsColumnError");
+    public static string ScanErrorsColumnType => GetString("ScanErrorsColumnType");
 }

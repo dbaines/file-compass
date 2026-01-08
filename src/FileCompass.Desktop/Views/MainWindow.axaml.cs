@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
@@ -978,6 +979,23 @@ public partial class MainWindow : Window
         LocationMenuSeparator.IsVisible = !isScanning;
         RemoveMenuItem.IsVisible = !isScanning;
 
+        // Check for scan errors
+        try
+        {
+            var errorCount = await ServiceLocator.ScanErrorRepository.GetCountByLocationAsync(targetLocation.Id);
+            ViewErrorsMenuItem.IsVisible = errorCount > 0 && !isScanning;
+            ViewErrorsMenuItem.Header = string.Format(
+                System.Globalization.CultureInfo.CurrentCulture,
+                Strings.ContextViewErrors,
+                errorCount);
+            ViewErrorsMenuItem.Tag = targetLocation;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error checking scan errors: {ex}");
+            ViewErrorsMenuItem.IsVisible = false;
+        }
+
         // Build Tag submenu dynamically
         try
         {
@@ -1086,6 +1104,92 @@ public partial class MainWindow : Window
             vm.CancelCurrentScan();
         }
     });
+
+    private void OnViewErrorsClick(object? sender, RoutedEventArgs e) => SafeExecuteAsync(async () =>
+    {
+        if (sender is not MenuItem menuItem) return;
+        if (menuItem.Tag is not FileCompass.Core.Models.Location location) return;
+
+        var errors = await ServiceLocator.ScanErrorRepository.GetByLocationAsync(location.Id);
+        await ShowScanErrorsDialogAsync(location.DisplayName, errors.ToList());
+    });
+
+    private async Task ShowScanErrorsDialogAsync(string locationName, List<FileCompass.Core.Models.ScanError> errors)
+    {
+        var title = string.Format(
+            System.Globalization.CultureInfo.CurrentCulture,
+            Strings.ScanErrorsTitle,
+            locationName);
+
+        if (errors.Count == 0)
+        {
+            await ShowErrorDialogAsync(title, Strings.ScanErrorsNoErrors);
+            return;
+        }
+
+        var dataGrid = new DataGrid
+        {
+            ItemsSource = errors,
+            AutoGenerateColumns = false,
+            IsReadOnly = true,
+            CanUserResizeColumns = true,
+            GridLinesVisibility = DataGridGridLinesVisibility.Horizontal,
+            MaxHeight = 400,
+        };
+
+        dataGrid.Columns.Add(new DataGridTextColumn
+        {
+            Header = Strings.ScanErrorsColumnPath,
+            Binding = new Binding("Path"),
+            Width = new DataGridLength(300),
+        });
+        dataGrid.Columns.Add(new DataGridTextColumn
+        {
+            Header = Strings.ScanErrorsColumnError,
+            Binding = new Binding("ErrorMessage"),
+            Width = new DataGridLength(200),
+        });
+        dataGrid.Columns.Add(new DataGridTextColumn
+        {
+            Header = Strings.ScanErrorsColumnType,
+            Binding = new Binding("ErrorType"),
+            Width = new DataGridLength(150),
+        });
+
+        var dialog = new Window
+        {
+            Title = title,
+            Width = 700,
+            Height = 500,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Content = new DockPanel
+            {
+                Margin = new Avalonia.Thickness(16),
+                Children =
+                {
+                    new Button
+                    {
+                        Content = Strings.ButtonClose,
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                        Margin = new Avalonia.Thickness(0, 8, 0, 0),
+                        [DockPanel.DockProperty] = Dock.Bottom,
+                    },
+                    dataGrid,
+                },
+            },
+        };
+
+        if (dialog.Content is DockPanel panel)
+        {
+            var closeButton = panel.Children.OfType<Button>().FirstOrDefault();
+            if (closeButton != null)
+            {
+                closeButton.Click += (_, _) => dialog.Close();
+            }
+        }
+
+        await dialog.ShowDialog(this);
+    }
 
     private async Task<bool> ShowConfirmationDialogAsync(string title, string message)
     {

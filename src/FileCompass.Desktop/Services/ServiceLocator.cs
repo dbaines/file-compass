@@ -12,6 +12,7 @@ public static class ServiceLocator
     private static SettingsRepository? _settingsRepository;
     private static TagRepository? _tagRepository;
     private static LocationTagRepository? _locationTagRepository;
+    private static ScanErrorRepository? _scanErrorRepository;
     private static FileScannerService? _fileScannerService;
     private static ExportService? _exportService;
     private static BackupService? _backupService;
@@ -36,6 +37,9 @@ public static class ServiceLocator
 
     public static LocationTagRepository LocationTagRepository =>
         _locationTagRepository ??= new LocationTagRepository(DatabaseService);
+
+    public static ScanErrorRepository ScanErrorRepository =>
+        _scanErrorRepository ??= new ScanErrorRepository(DatabaseService);
 
     public static FileScannerService FileScannerService =>
         _fileScannerService ??= new FileScannerService(

@@ -178,6 +178,9 @@
   <data name="ContextCancelScan" xml:space="preserve">
     <value>Cancel Scan</value>
   </data>
+  <data name="ContextViewErrors" xml:space="preserve">
+    <value>View Errors ({0})</value>
+  </data>
   <data name="ContextRemove" xml:space="preserve">
     <value>Remove</value>
   </data>
@@ -727,5 +730,22 @@ Partial results may be lost.</value>
   </data>
   <data name="CategoryOther" xml:space="preserve">
     <value>Other</value>
+  </data>
+
+  <!-- Scan Errors -->
+  <data name="ScanErrorsTitle" xml:space="preserve">
+    <value>Scan Errors for {0}</value>
+  </data>
+  <data name="ScanErrorsNoErrors" xml:space="preserve">
+    <value>No errors were recorded during the last scan.</value>
+  </data>
+  <data name="ScanErrorsColumnPath" xml:space="preserve">
+    <value>Path</value>
+  </data>
+  <data name="ScanErrorsColumnError" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="ScanErrorsColumnType" xml:space="preserve">
+    <value>Type</value>
   </data>
 </root>

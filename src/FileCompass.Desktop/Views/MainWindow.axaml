@@ -132,6 +132,7 @@
                                 <MenuItem x:Name="TagMenuItem" Header="{x:Static t:Strings.ContextTag}"/>
                                 <MenuItem x:Name="RescanMenuItem" Header="{x:Static t:Strings.ContextRescan}" Command="{Binding RefreshLocationCommand}"/>
                                 <MenuItem x:Name="CancelScanMenuItem" Header="{x:Static t:Strings.ContextCancelScan}" Click="OnCancelScanClick" IsVisible="False"/>
+                                <MenuItem x:Name="ViewErrorsMenuItem" Header="{x:Static t:Strings.ContextViewErrors}" Click="OnViewErrorsClick" IsVisible="False"/>
                                 <Separator x:Name="LocationMenuSeparator"/>
                                 <MenuItem x:Name="RemoveMenuItem" Header="{x:Static t:Strings.ContextRemove}" Command="{Binding DeleteLocationCommand}"/>
                             </ContextMenu>
