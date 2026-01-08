@@ -100,6 +100,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private List<FileEntry> _allFiles = [];
     private CancellationTokenSource? _scanCts;
     private CancellationTokenSource? _loadFilesCts;
+    private CancellationTokenSource? _filterCts;
     private long? _scanningLocationId;
 
     public bool IsLocationScanning(long locationId) => _scanningLocationId == locationId;
@@ -298,6 +299,12 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     private async Task ApplyFiltersAsync()
     {
+        // Cancel any pending filter operation
+        _filterCts?.Cancel();
+        _filterCts?.Dispose();
+        _filterCts = new CancellationTokenSource();
+        var cancellationToken = _filterCts.Token;
+
         if (_allFiles.Count == 0)
         {
             Files = [];
@@ -309,31 +316,43 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             .Select(f => f.Category)
             .ToHashSet(StringComparer.Ordinal);
 
-        var filtered = await Task.Run(() =>
+        try
         {
-            IEnumerable<FileEntry> result = _allFiles;
-
-            // Apply directory filter
-            if (!ShowDirectories)
+            var filtered = await Task.Run(() =>
             {
-                result = result.Where(f => !f.IsDirectory);
-            }
+                IEnumerable<FileEntry> result = _allFiles;
 
-            // Apply file type filter (directories pass through, files must match category)
-            if (selectedCategories.Count > 0 && selectedCategories.Count < FileTypeFilters.Count)
-            {
-                result = result.Where(f => f.IsDirectory || selectedCategories.Contains(f.FileCategory));
-            }
-            else if (selectedCategories.Count == 0)
-            {
-                // No types selected - show nothing (except directories if enabled)
-                result = result.Where(f => f.IsDirectory);
-            }
+                // Apply directory filter
+                if (!ShowDirectories)
+                {
+                    result = result.Where(f => !f.IsDirectory);
+                }
 
-            return result.ToList();
-        });
+                cancellationToken.ThrowIfCancellationRequested();
 
-        Files = new ObservableCollection<FileEntry>(filtered);
+                // Apply file type filter (directories pass through, files must match category)
+                if (selectedCategories.Count > 0 && selectedCategories.Count < FileTypeFilters.Count)
+                {
+                    result = result.Where(f => f.IsDirectory || selectedCategories.Contains(f.FileCategory));
+                }
+                else if (selectedCategories.Count == 0)
+                {
+                    // No types selected - show nothing (except directories if enabled)
+                    result = result.Where(f => f.IsDirectory);
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                return result.ToList();
+            }, cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+            Files = new ObservableCollection<FileEntry>(filtered);
+        }
+        catch (OperationCanceledException)
+        {
+            // Filter was cancelled by a newer filter operation - ignore
+        }
     }
 
     private void ApplyFilters()
@@ -879,13 +898,16 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             // Cancel any ongoing operations
             _scanCts?.Cancel();
             _loadFilesCts?.Cancel();
+            _filterCts?.Cancel();
 
             // Dispose managed resources
             _scanCts?.Dispose();
             _loadFilesCts?.Dispose();
+            _filterCts?.Dispose();
 
             _scanCts = null;
             _loadFilesCts = null;
+            _filterCts = null;
         }
 
         _disposed = true;
