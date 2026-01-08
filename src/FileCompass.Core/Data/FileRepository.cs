@@ -122,8 +122,11 @@ public class FileRepository
         // Build WHERE clauses based on query
         if (!string.IsNullOrWhiteSpace(query.SearchTerm))
         {
+            var preparedQuery = PrepareFtsQuery(query.SearchTerm);
+            // Add wildcard suffix for prefix matching unless user already provided one
+            var searchTerm = EndsWithWildcard(preparedQuery) ? preparedQuery : $"{preparedQuery}*";
             whereClauses.Add("f.id IN (SELECT rowid FROM files_fts WHERE files_fts MATCH @searchTerm)");
-            parameters.Add(new SqliteParameter("@searchTerm", $"{EscapeFtsQuery(query.SearchTerm)}*"));
+            parameters.Add(new SqliteParameter("@searchTerm", searchTerm));
         }
 
         if (query.LocationId.HasValue)
@@ -232,15 +235,33 @@ public class FileRepository
     }
 
     /// <summary>
-    /// Escapes special FTS5 characters in a search query.
-    /// FTS5 uses special characters like *, ", ? for pattern matching.
+    /// Prepares a search query for FTS5.
+    /// Supports wildcards: * at end of terms for prefix matching.
+    /// Escapes double quotes for literal matching.
     /// </summary>
-    private static string EscapeFtsQuery(string query)
+    private static string PrepareFtsQuery(string query)
     {
-        return query
-            .Replace("\"", "\"\"")
-            .Replace("*", "")
-            .Replace("?", "");
+        // Escape double quotes
+        var escaped = query.Replace("\"", "\"\"");
+
+        // FTS5 doesn't support ? wildcards, remove them
+        escaped = escaped.Replace("?", "");
+
+        // Normalize multiple consecutive wildcards to single
+        while (escaped.Contains("**", StringComparison.Ordinal))
+        {
+            escaped = escaped.Replace("**", "*");
+        }
+
+        return escaped;
+    }
+
+    /// <summary>
+    /// Determines if the query already ends with a wildcard
+    /// </summary>
+    private static bool EndsWithWildcard(string query)
+    {
+        return query.TrimEnd().EndsWith('*');
     }
 
     private static FileEntry MapFileEntry(SqliteDataReader reader)
