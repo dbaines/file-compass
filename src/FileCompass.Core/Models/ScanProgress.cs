@@ -19,14 +19,28 @@ public class ScanProgress
         ? FilesScanned / ElapsedTime.TotalSeconds
         : 0;
 
+    public string ElapsedTimeFormatted
+    {
+        get
+        {
+            var elapsed = ElapsedTime;
+            if (elapsed.TotalHours >= 1)
+                return $"{(int)elapsed.TotalHours}h {elapsed.Minutes}m {elapsed.Seconds}s";
+            if (elapsed.TotalMinutes >= 1)
+                return $"{elapsed.Minutes}m {elapsed.Seconds}s";
+            return $"{elapsed.Seconds}s";
+        }
+    }
+
     public string StatusMessage
     {
         get
         {
-            if (IsPaused) return $"Paused: {FilesScanned:N0} files, {FoldersScanned:N0} folders";
+            var errorSuffix = ErrorCount > 0 ? $", {ErrorCount:N0} errors" : "";
+            if (IsPaused) return $"Paused: {FilesScanned:N0} files, {FoldersScanned:N0} folders ({ElapsedTimeFormatted}){errorSuffix}";
             if (IsCancelled) return "Cancelled";
-            if (IsComplete) return $"Complete: {FilesScanned:N0} files, {FoldersScanned:N0} folders";
-            return $"Scanning: {FilesScanned:N0} files ({FilesPerSecond:N0}/sec)";
+            if (IsComplete) return $"Complete: {FilesScanned:N0} files, {FoldersScanned:N0} folders in {ElapsedTimeFormatted}{errorSuffix}";
+            return $"{FilesScanned:N0} files, {FoldersScanned:N0} folders ({FilesPerSecond:N0}/sec){errorSuffix}";
         }
     }
 }

@@ -295,12 +295,16 @@ public class ScanProgressModelTests
         {
             StartTime = DateTime.UtcNow.AddSeconds(-5),
             FilesScanned = 50,
+            FoldersScanned = 10,
             IsComplete = false,
             IsCancelled = false
         };
 
-        Assert.Contains("Scanning", progress.StatusMessage);
         Assert.Contains("50", progress.StatusMessage);
+        Assert.Contains("files", progress.StatusMessage);
+        Assert.Contains("10", progress.StatusMessage);
+        Assert.Contains("folders", progress.StatusMessage);
+        Assert.Contains("/sec", progress.StatusMessage);
     }
 
     [Fact]
