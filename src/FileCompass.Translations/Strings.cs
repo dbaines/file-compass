@@ -141,6 +141,7 @@ public static class Strings
     public static string ErrorLocationAccessDeniedMessage => GetString("ErrorLocationAccessDeniedMessage");
     public static string ErrorLocationNotFoundTitle => GetString("ErrorLocationNotFoundTitle");
     public static string ErrorLocationNotFoundMessage => GetString("ErrorLocationNotFoundMessage");
+    public static string ErrorUnexpectedTitle => GetString("ErrorUnexpectedTitle");
 
     // Dialogs
     public static string DialogAboutTitle => GetString("DialogAboutTitle");

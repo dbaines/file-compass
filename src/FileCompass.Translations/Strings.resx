@@ -383,6 +383,9 @@ Try adjusting your filters or search term.</value>
   <data name="ErrorLocationNotFoundMessage" xml:space="preserve">
     <value>The selected location does not exist or is not accessible. The path may be invalid or the network location may be unavailable.</value>
   </data>
+  <data name="ErrorUnexpectedTitle" xml:space="preserve">
+    <value>Unexpected Error</value>
+  </data>
 
   <!-- Dialogs -->
   <data name="DialogAboutTitle" xml:space="preserve">

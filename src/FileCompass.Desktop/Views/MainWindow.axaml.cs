@@ -27,6 +27,23 @@ public partial class MainWindow : Window
         LocationsListBox.AddHandler(Avalonia.Input.InputElement.PointerPressedEvent, OnLocationsListBoxPointerPressed, Avalonia.Interactivity.RoutingStrategies.Tunnel);
     }
 
+    /// <summary>
+    /// Helper method to safely execute async operations in event handlers.
+    /// Catches exceptions and displays an error dialog to prevent silent failures.
+    /// </summary>
+    private async void SafeExecuteAsync(Func<Task> asyncOperation)
+    {
+        try
+        {
+            await asyncOperation();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error in async operation: {ex}");
+            await ShowErrorDialogAsync(Strings.ErrorUnexpectedTitle, ex.Message);
+        }
+    }
+
     private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
         // Unsubscribe from ViewModel events and dispose to prevent memory leaks
@@ -220,7 +237,7 @@ public partial class MainWindow : Window
         Close();
     }
 
-    private async void OnSettingsClick(object? sender, RoutedEventArgs e)
+    private void OnSettingsClick(object? sender, RoutedEventArgs e) => SafeExecuteAsync(async () =>
     {
         var dialog = new SettingsWindow();
         await dialog.ShowDialog(this);
@@ -230,9 +247,9 @@ public partial class MainWindow : Window
             var history = await ServiceLocator.SettingsRepository.GetSearchHistoryAsync();
             vm.SearchHistory = new System.Collections.ObjectModel.ObservableCollection<string>(history);
         }
-    }
+    });
 
-    private async void OnTagsManagementClick(object? sender, RoutedEventArgs e)
+    private void OnTagsManagementClick(object? sender, RoutedEventArgs e) => SafeExecuteAsync(async () =>
     {
         var vm = new TagManagementViewModel();
         await vm.LoadTagsAsync();
@@ -243,24 +260,18 @@ public partial class MainWindow : Window
         {
             await mainVm.LoadLocationsAsync();
         }
-    }
+    });
 
-    private async void OnThemeSystemClick(object? sender, RoutedEventArgs e)
-    {
-        await ServiceLocator.ThemeService.SetThemeAsync(AppTheme.System);
-    }
+    private void OnThemeSystemClick(object? sender, RoutedEventArgs e) =>
+        SafeExecuteAsync(() => ServiceLocator.ThemeService.SetThemeAsync(AppTheme.System));
 
-    private async void OnThemeLightClick(object? sender, RoutedEventArgs e)
-    {
-        await ServiceLocator.ThemeService.SetThemeAsync(AppTheme.Light);
-    }
+    private void OnThemeLightClick(object? sender, RoutedEventArgs e) =>
+        SafeExecuteAsync(() => ServiceLocator.ThemeService.SetThemeAsync(AppTheme.Light));
 
-    private async void OnThemeDarkClick(object? sender, RoutedEventArgs e)
-    {
-        await ServiceLocator.ThemeService.SetThemeAsync(AppTheme.Dark);
-    }
+    private void OnThemeDarkClick(object? sender, RoutedEventArgs e) =>
+        SafeExecuteAsync(() => ServiceLocator.ThemeService.SetThemeAsync(AppTheme.Dark));
 
-    private async void OnAboutClick(object? sender, RoutedEventArgs e)
+    private void OnAboutClick(object? sender, RoutedEventArgs e) => SafeExecuteAsync(async () =>
     {
         var githubLink = new Button
         {
@@ -334,9 +345,9 @@ public partial class MainWindow : Window
         };
 
         await dialog.ShowDialog(this);
-    }
+    });
 
-    private async void OnAddLocationClick(object? sender, RoutedEventArgs e)
+    private void OnAddLocationClick(object? sender, RoutedEventArgs e) => SafeExecuteAsync(async () =>
     {
         var topLevel = GetTopLevel(this);
         if (topLevel is null) return;
@@ -393,7 +404,7 @@ public partial class MainWindow : Window
             await vm.AddLocationAsync(path, promptResult.Name);
             await AssignTagsToNewLocationAsync(path, promptResult.TagIds, vm);
         }
-    }
+    });
 
     private static async Task AssignTagsToNewLocationAsync(string path, List<long> tagIds, MainWindowViewModel vm)
     {
@@ -675,7 +686,7 @@ public partial class MainWindow : Window
         return result;
     }
 
-    private async void OnExportCsvClick(object? sender, RoutedEventArgs e)
+    private void OnExportCsvClick(object? sender, RoutedEventArgs e) => SafeExecuteAsync(async () =>
     {
         var topLevel = GetTopLevel(this);
         if (topLevel is null) return;
@@ -701,9 +712,9 @@ public partial class MainWindow : Window
             }
             await vm.ExportToCsvAsync(path);
         }
-    }
+    });
 
-    private async void OnExportExcelClick(object? sender, RoutedEventArgs e)
+    private void OnExportExcelClick(object? sender, RoutedEventArgs e) => SafeExecuteAsync(async () =>
     {
         var topLevel = GetTopLevel(this);
         if (topLevel is null) return;
@@ -729,9 +740,9 @@ public partial class MainWindow : Window
             }
             await vm.ExportToExcelAsync(path);
         }
-    }
+    });
 
-    private async void OnExportHtmlClick(object? sender, RoutedEventArgs e)
+    private void OnExportHtmlClick(object? sender, RoutedEventArgs e) => SafeExecuteAsync(async () =>
     {
         var topLevel = GetTopLevel(this);
         if (topLevel is null) return;
@@ -757,9 +768,9 @@ public partial class MainWindow : Window
             }
             await vm.ExportToHtmlAsync(path);
         }
-    }
+    });
 
-    private async void OnBackupClick(object? sender, RoutedEventArgs e)
+    private void OnBackupClick(object? sender, RoutedEventArgs e) => SafeExecuteAsync(async () =>
     {
         var topLevel = GetTopLevel(this);
         if (topLevel is null) return;
@@ -785,9 +796,9 @@ public partial class MainWindow : Window
             }
             await vm.CreateBackupAsync(path);
         }
-    }
+    });
 
-    private async void OnRestoreClick(object? sender, RoutedEventArgs e)
+    private void OnRestoreClick(object? sender, RoutedEventArgs e) => SafeExecuteAsync(async () =>
     {
         var topLevel = GetTopLevel(this);
         if (topLevel is null) return;
@@ -813,9 +824,9 @@ public partial class MainWindow : Window
             }
             await vm.RestoreBackupAsync(path);
         }
-    }
+    });
 
-    private async void OnAdvancedSearchClick(object? sender, RoutedEventArgs e)
+    private void OnAdvancedSearchClick(object? sender, RoutedEventArgs e) => SafeExecuteAsync(async () =>
     {
         if (DataContext is not MainWindowViewModel vm) return;
 
@@ -836,9 +847,9 @@ public partial class MainWindow : Window
         {
             await vm.AdvancedSearchAsync(dialog.Result);
         }
-    }
+    });
 
-    private async void OnRenameLocationClick(object? sender, RoutedEventArgs e)
+    private void OnRenameLocationClick(object? sender, RoutedEventArgs e) => SafeExecuteAsync(async () =>
     {
         if (DataContext is not MainWindowViewModel vm || vm.SelectedLocation is null) return;
 
@@ -901,7 +912,7 @@ public partial class MainWindow : Window
 
         if (result is not null)
             await vm.RenameLocationAsync(result);
-    }
+    });
 
     private async Task ShowErrorDialogAsync(string title, string message)
     {
@@ -968,7 +979,14 @@ public partial class MainWindow : Window
         RemoveMenuItem.IsVisible = !isScanning;
 
         // Build Tag submenu dynamically
-        await BuildTagSubmenuAsync(targetLocation, vm);
+        try
+        {
+            await BuildTagSubmenuAsync(targetLocation, vm);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error building tag submenu: {ex}");
+        }
     }
 
     private async Task BuildTagSubmenuAsync(FileCompass.Core.Models.Location targetLocation, MainWindowViewModel vm)
@@ -1012,7 +1030,7 @@ public partial class MainWindow : Window
                 } : null
             };
 
-            menuItem.Click += async (s, args) =>
+            menuItem.Click += (s, args) => SafeExecuteAsync(async () =>
             {
                 if (isAssigned)
                     await ServiceLocator.LocationTagRepository.UnassignTagAsync(locationId, tagId);
@@ -1020,7 +1038,7 @@ public partial class MainWindow : Window
                     await ServiceLocator.LocationTagRepository.AssignTagAsync(locationId, tagId);
 
                 await vm.LoadLocationsAsync();
-            };
+            });
 
             TagMenuItem.Items.Add(menuItem);
         }
@@ -1032,7 +1050,7 @@ public partial class MainWindow : Window
         }
 
         var createNewItem = new MenuItem { Header = Strings.TagsCreateNew };
-        createNewItem.Click += async (s, args) =>
+        createNewItem.Click += (s, args) => SafeExecuteAsync(async () =>
         {
             var tagVm = new TagManagementViewModel();
             await tagVm.LoadTagsAsync();
@@ -1046,11 +1064,11 @@ public partial class MainWindow : Window
             }
 
             await vm.LoadLocationsAsync();
-        };
+        });
         TagMenuItem.Items.Add(createNewItem);
     }
 
-    private async void OnCancelScanClick(object? sender, RoutedEventArgs e)
+    private void OnCancelScanClick(object? sender, RoutedEventArgs e) => SafeExecuteAsync(async () =>
     {
         if (DataContext is not MainWindowViewModel vm) return;
 
@@ -1062,7 +1080,7 @@ public partial class MainWindow : Window
         {
             vm.CancelCurrentScan();
         }
-    }
+    });
 
     private async Task<bool> ShowConfirmationDialogAsync(string title, string message)
     {
