@@ -738,20 +738,20 @@ public class DatabaseServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SettingsRepository_SearchHistory_LimitsTo20Items()
+    public async Task SettingsRepository_SearchHistory_LimitsTo50Items()
     {
         await _db.InitializeAsync();
 
-        // Add 25 items
-        for (var i = 1; i <= 25; i++)
+        // Add 55 items
+        for (var i = 1; i <= 55; i++)
         {
             await _settingsRepo.AddSearchHistoryAsync($"search{i}");
         }
 
         var history = await _settingsRepo.GetSearchHistoryAsync();
 
-        Assert.Equal(20, history.Count);
-        Assert.Equal("search25", history[0]); // Most recent first
+        Assert.Equal(50, history.Count);
+        Assert.Equal("search55", history[0]); // Most recent first
     }
 
     #endregion

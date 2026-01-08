@@ -6,7 +6,7 @@ namespace FileCompass.Core.Data;
 public class SettingsRepository
 {
     private readonly DatabaseService _db;
-    private const int MaxSearchHistoryItems = 20;
+    private const int MaxSearchHistoryItems = 50;
 
     public SettingsRepository(DatabaseService db)
     {
