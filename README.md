@@ -55,7 +55,7 @@ dotnet publish src/FileCompass.Desktop -c Release -o publish
 dotnet publish src/FileCompass.Desktop -c Release -r linux-x64 --self-contained -o publish
 
 # Build for windows
-dotnet publish src/FileCompass.Desktop/FileCompass.Desktop.csproj -c Release -r win-x64
+dotnet publish src/FileCompass.Desktop -c Release -r win-x64 --self-contained -o publish
 ```
 
 ## Testing
