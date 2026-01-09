@@ -132,31 +132,39 @@ Files = new ObservableCollection<FileEntry>(filtered);
 
 ---
 
-### - [ ] 9. No Filter Cancellation
+### - [x] 9. No Filter Cancellation
 
 **Location:** `src/FileCompass.Desktop/ViewModels/MainWindowViewModel.cs:283`
 
 `ApplyFiltersAsync()` has no CancellationToken. Rapid filter changes run all operations to completion.
 
+**Fix:** Added CancellationTokenSource to ApplyFiltersAsync that cancels previous filter operations when new ones start.
+
 ---
 
-### - [ ] 10. No Pause/Resume for Indexing
+### - [x] 10. No Pause/Resume for Indexing
 
 Cancelling a scan requires restarting from scratch. All files for location are deleted before re-scanning.
 
+**Fix:** Added Pause/Resume buttons during scanning. Uses ManualResetEventSlim to pause scan operations while preserving progress.
+
 ---
 
-### - [ ] 11. Permission Errors Skipped Silently
+### - [x] 11. Permission Errors Skipped Silently
 
 **Location:** `src/FileCompass.Core/Services/FileScannerService.cs:198-202`
 
 Directories with access denied are skipped. User sees no warning during scan - errors only in log.
 
+**Fix:** Added "View Errors (N)" context menu item for locations. Shows scan errors in a dialog with path, error message, and error type.
+
 ---
 
-### - [ ] 12. Windows MAX_PATH Not Handled
+### - [x] 12. Windows MAX_PATH Not Handled
 
 No explicit handling of 260-character path limit. Files with long paths may fail silently on Windows.
+
+**Fix:** Errors are now viewable via the scan error log viewer (same fix as item 11).
 
 ---
 
@@ -172,11 +180,13 @@ Older searches automatically discarded.
 
 ---
 
-### - [ ] 14. Indeterminate Progress Only
+### - [x] 14. Indeterminate Progress Only
 
 **Location:** `src/FileCompass.Desktop/Views/MainWindow.axaml:334-347`
 
 No percentage progress, ETA, or file count during operations.
+
+**Fix:** Enhanced ScanProgress.StatusMessage to show files/folders count, scan rate (X/sec), elapsed time, and error count.
 
 ---
 
@@ -190,11 +200,13 @@ Sheet names truncated to 31 characters (Excel limitation, not app's fault).
 
 ---
 
-### - [ ] 16. FTS5 Wildcard Search Disabled
+### - [x] 16. FTS5 Wildcard Search Disabled
 
 **Location:** `src/FileCompass.Core/Data/FileRepository.cs:238-244`
 
 `*` and `?` characters are stripped from search queries. Users cannot use wildcard patterns.
+
+**Fix:** Users can now use `*` at the end of search terms for explicit prefix matching. The `?` wildcard is still removed as FTS5 doesn't support single-character wildcards.
 
 ---
 
@@ -212,8 +224,8 @@ Tags context menu populated asynchronously - may appear empty briefly.
 
 | Status | Count |
 |--------|-------|
-| Fixed | 6 |
-| Outstanding | 10 |
+| Fixed | 12 |
+| Outstanding | 4 |
 | N/A | 1 |
 
 ### Fixed Issues:
@@ -223,8 +235,13 @@ Tags context menu populated asynchronously - may appear empty briefly.
 4. Fire-and-forget async patterns
 5. Search history limit increased
 6. Context menu loading flicker
+7. Filter cancellation support
+8. Pause/resume for indexing
+9. Permission error visibility (scan error log viewer)
+10. MAX_PATH error visibility (scan error log viewer)
+11. Determinate progress with file counts
+12. FTS5 wildcard prefix search
 
 ### Outstanding Issues (by priority):
 - **Deferred:** Parent directory hierarchy (tree view)
-- **Medium:** Database tuning, size management, ObservableCollection optimization, filter cancellation, pause/resume indexing, permission error warnings, MAX_PATH handling
-- **Low:** Indeterminate progress, wildcard search
+- **Medium:** Database tuning, database size management, ObservableCollection optimization

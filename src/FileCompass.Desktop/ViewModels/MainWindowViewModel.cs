@@ -638,6 +638,10 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     {
         SearchText = string.Empty;
         _isShowingSearchResults = false;
+
+        // Reset filters to defaults
+        ResetFiltersToDefaults();
+
         if (SelectedLocation is not null)
         {
             await LoadFilesForLocationAsync(SelectedLocation);
@@ -649,6 +653,27 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             StatusMessage = Strings.StatusReady;
         }
         NotifyEmptyStateChanged();
+    }
+
+    private void ResetFiltersToDefaults()
+    {
+        // Reset ShowDirectories to default (false)
+        ShowDirectories = false;
+
+        // Select all file types (default state)
+        foreach (var filter in FileTypeFilters)
+            filter.FilterChanged = null;
+
+        foreach (var filter in FileTypeFilters)
+            filter.IsSelected = true;
+
+        foreach (var filter in FileTypeFilters)
+            filter.FilterChanged = OnFileTypeFilterChanged;
+
+        OnPropertyChanged(nameof(FileTypeFilterText));
+
+        // Save the reset filter state
+        SafeFireAndForget(SaveFileTypeFiltersAsync());
     }
 
     private void NotifyEmptyStateChanged()
