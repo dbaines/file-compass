@@ -257,28 +257,33 @@ public class FileScannerService : IDisposable
                     continue;
                 }
 
+                var isDirectory = entry is IDirectoryInfo;
                 var fileEntry = new FileEntry
                 {
                     LocationId = locationId,
                     ParentId = parentId,
                     Name = entry.Name,
-                    Extension = entry is IFileInfo ? Path.GetExtension(entry.Name).TrimStart('.') : null,
+                    Extension = isDirectory ? null : Path.GetExtension(entry.Name).TrimStart('.'),
                     RelativePath = entryRelativePath,
                     Size = entry is IFileInfo file ? file.Length : 0,
-                    IsDirectory = entry is IDirectoryInfo,
+                    IsDirectory = isDirectory,
                     ModifiedAt = entry.LastWriteTimeUtc,
                     CreatedAt = entry.CreationTimeUtc,
                     Attributes = entry.Attributes.ToString()
                 };
 
-                batch.Add(fileEntry);
+                long? directoryId = null;
 
-                if (fileEntry.IsDirectory)
+                if (isDirectory)
                 {
+                    // Insert directories immediately to get their ID for parent tracking
+                    directoryId = await _fileRepo.AddAsync(fileEntry);
                     scanProgress.FoldersScanned++;
                 }
                 else
                 {
+                    // Batch files for efficiency
+                    batch.Add(fileEntry);
                     scanProgress.FilesScanned++;
                     scanProgress.BytesScanned += fileEntry.Size;
                 }
@@ -294,12 +299,12 @@ public class FileScannerService : IDisposable
                 }
 
                 // Recursively scan subdirectories (skip symlinks to prevent infinite loops)
-                if (entry is IDirectoryInfo && !IsSymlink(entry))
+                if (isDirectory && !IsSymlink(entry))
                 {
                     await ScanDirectoryAsync(
                         entry.FullName,
                         locationId,
-                        null, // We're not tracking parent IDs for simplicity in this version
+                        directoryId, // Pass the directory's ID as the parent for its children
                         entryRelativePath,
                         batch,
                         scanProgress,

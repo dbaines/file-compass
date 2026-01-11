@@ -931,6 +931,16 @@ public partial class MainWindow : Window
         }
     });
 
+    private void OnFileDoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm &&
+            vm.SelectedFile?.IsDirectory == true &&
+            vm.ViewMode == FileViewMode.Tree)
+        {
+            vm.NavigateToFolderCommand.Execute(vm.SelectedFile);
+        }
+    }
+
     private void OnRenameLocationClick(object? sender, RoutedEventArgs e) => SafeExecuteAsync(async () =>
     {
         if (DataContext is not MainWindowViewModel vm || vm.SelectedLocation is null) return;

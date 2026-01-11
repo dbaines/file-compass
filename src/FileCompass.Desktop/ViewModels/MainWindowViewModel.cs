@@ -88,13 +88,26 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     private bool _isLoadingFiles;
 
+    [ObservableProperty]
+    private FileViewMode _viewMode = FileViewMode.Tree;
+
+    [ObservableProperty]
+    private ObservableCollection<BreadcrumbItem> _breadcrumbs = [];
+
+    [ObservableProperty]
+    private long? _currentFolderId;
+
     private bool _isShowingSearchResults;
+    private FileViewMode _preferredViewMode = FileViewMode.Tree;
 
     public bool ShowNoLocationState => SelectedLocation is null && Files.Count == 0 && !_isShowingSearchResults && !IsLoadingFiles;
     public bool ShowNoFilesState => SelectedLocation is not null && Files.Count == 0 && !_isShowingSearchResults && !IsLoadingFiles;
     public bool ShowNoResultsState => Files.Count == 0 && _isShowingSearchResults && !IsLoadingFiles;
     public bool ShowEmptyState => ShowNoLocationState || ShowNoFilesState || ShowNoResultsState;
     public bool ShowFileList => !IsLoadingFiles && !ShowEmptyState;
+    public bool ShowListViewFilters => ViewMode == FileViewMode.List || _isShowingSearchResults;
+    public bool ShowBreadcrumbs => ViewMode == FileViewMode.Tree && !_isShowingSearchResults && SelectedLocation is not null;
+    public bool CanSwitchToTreeView => !_isShowingSearchResults;
 
     public string SearchPlaceholder => SelectedLocation is null
         ? Strings.SearchPlaceholderAll
@@ -104,7 +117,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private CancellationTokenSource? _scanCts;
     private CancellationTokenSource? _loadFilesCts;
     private CancellationTokenSource? _filterCts;
+    private CancellationTokenSource? _treeLoadCts;
     private long? _scanningLocationId;
+    private Stack<BreadcrumbItem> _breadcrumbStack = new();
 
     public bool IsLocationScanning(long locationId) => _scanningLocationId == locationId;
     public bool CanAddLocation => _scanningLocationId is null;
@@ -141,6 +156,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             await LoadColumnVisibilityAsync();
             await LoadShowDirectoriesAsync();
             await LoadFileTypeFiltersAsync();
+            await LoadViewModeAsync();
             StatusMessage = Strings.StatusReady;
         }
         catch (Exception ex)
@@ -188,6 +204,24 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     partial void OnIsPathColumnVisibleChanged(bool value) => SafeFireAndForget(SaveColumnVisibilityAsync());
 
     partial void OnIsLoadingFilesChanged(bool value) => NotifyEmptyStateChanged();
+
+    partial void OnViewModeChanged(FileViewMode value)
+    {
+        NotifyEmptyStateChanged();
+    }
+
+    private async Task LoadViewModeAsync()
+    {
+        var value = await ServiceLocator.SettingsRepository.GetAsync("view_mode");
+        var mode = string.Equals(value, "List", StringComparison.Ordinal) ? FileViewMode.List : FileViewMode.Tree;
+        ViewMode = mode;
+        _preferredViewMode = mode;
+    }
+
+    private async Task SaveViewModeAsync()
+    {
+        await ServiceLocator.SettingsRepository.SetAsync("view_mode", ViewMode.ToString());
+    }
 
     partial void OnShowDirectoriesChanged(bool value)
     {
@@ -414,19 +448,31 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     {
         OnPropertyChanged(nameof(SearchPlaceholder));
 
+        // Reset breadcrumb navigation when location changes
+        _breadcrumbStack.Clear();
+        CurrentFolderId = null;
+
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
             SafeFireAndForget(SearchAsync());
         }
         else if (value is not null)
         {
-            SafeFireAndForget(LoadFilesForLocationAsync(value));
+            if (ViewMode == FileViewMode.Tree)
+            {
+                SafeFireAndForget(LoadFolderContentsAsync(value.Id, null));
+            }
+            else
+            {
+                SafeFireAndForget(LoadFilesForLocationAsync(value));
+            }
         }
         else
         {
             _isShowingSearchResults = false;
             _allFiles.Clear();
             Files.Clear();
+            Breadcrumbs.Clear();
             StatusMessage = Strings.StatusReady;
         }
         NotifyEmptyStateChanged();
@@ -452,7 +498,8 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
             var allFiles = await Task.Run(async () =>
             {
-                var files = await ServiceLocator.FileRepository.GetByParentAsync(location.Id, null);
+                // Get ALL files for list view (flat list)
+                var files = await ServiceLocator.FileRepository.GetAllByLocationAsync(location.Id);
                 cancellationToken.ThrowIfCancellationRequested();
                 return files.ToList();
             }, cancellationToken);
@@ -639,17 +686,31 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         SearchText = string.Empty;
         _isShowingSearchResults = false;
 
+        // Restore the user's preferred view mode
+        ViewMode = _preferredViewMode;
+
         // Reset filters to defaults
         ResetFiltersToDefaults();
 
         if (SelectedLocation is not null)
         {
-            await LoadFilesForLocationAsync(SelectedLocation);
+            // Reload based on current view mode
+            if (ViewMode == FileViewMode.Tree)
+            {
+                _breadcrumbStack.Clear();
+                CurrentFolderId = null;
+                await LoadFolderContentsAsync(SelectedLocation.Id, null);
+            }
+            else
+            {
+                await LoadFilesForLocationAsync(SelectedLocation);
+            }
         }
         else
         {
             _allFiles.Clear();
             Files.Clear();
+            Breadcrumbs.Clear();
             StatusMessage = Strings.StatusReady;
         }
         NotifyEmptyStateChanged();
@@ -683,6 +744,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(ShowNoFilesState));
         OnPropertyChanged(nameof(ShowNoResultsState));
         OnPropertyChanged(nameof(ShowFileList));
+        OnPropertyChanged(nameof(ShowListViewFilters));
+        OnPropertyChanged(nameof(ShowBreadcrumbs));
+        OnPropertyChanged(nameof(CanSwitchToTreeView));
     }
 
     [RelayCommand]
@@ -718,6 +782,8 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             });
 
             _isShowingSearchResults = true;
+            _preferredViewMode = ViewMode;
+            ViewMode = FileViewMode.List;
             _allFiles = result.Files.ToList();
             ApplyFilters();
             IsLocationColumnVisible = isGlobalSearch;
@@ -921,6 +987,199 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         }
     }
 
+    #region Tree View Navigation
+
+    [RelayCommand]
+    private async Task SetTreeViewAsync()
+    {
+        if (ViewMode == FileViewMode.Tree)
+            return;
+
+        ViewMode = FileViewMode.Tree;
+        _preferredViewMode = FileViewMode.Tree;
+        await SaveViewModeAsync();
+
+        if (SelectedLocation is not null && !_isShowingSearchResults)
+        {
+            _breadcrumbStack.Clear();
+            CurrentFolderId = null;
+            await LoadFolderContentsAsync(SelectedLocation.Id, null);
+        }
+    }
+
+    [RelayCommand]
+    private async Task SetListViewAsync()
+    {
+        if (ViewMode == FileViewMode.List)
+            return;
+
+        ViewMode = FileViewMode.List;
+        _preferredViewMode = FileViewMode.List;
+        await SaveViewModeAsync();
+
+        if (SelectedLocation is not null && !_isShowingSearchResults)
+        {
+            await LoadFilesForLocationAsync(SelectedLocation);
+        }
+    }
+
+    [RelayCommand]
+    private async Task NavigateToFolderAsync(FileEntry? folder)
+    {
+        if (folder is null || !folder.IsDirectory || SelectedLocation is null)
+            return;
+
+        // Push current location to breadcrumb stack before navigating
+        var currentName = CurrentFolderId is null
+            ? SelectedLocation.DisplayName
+            : Breadcrumbs.LastOrDefault()?.Name ?? Strings.BreadcrumbRoot;
+        _breadcrumbStack.Push(new BreadcrumbItem(CurrentFolderId, currentName));
+
+        CurrentFolderId = folder.Id;
+        await LoadFolderContentsAsync(SelectedLocation.Id, folder.Id);
+    }
+
+    [RelayCommand]
+    private async Task NavigateToBreadcrumbAsync(BreadcrumbItem? item)
+    {
+        if (item is null || SelectedLocation is null)
+            return;
+
+        // Pop items from stack until we reach the target
+        while (_breadcrumbStack.Count > 0)
+        {
+            var top = _breadcrumbStack.Peek();
+            if (top.FileId == item.FileId)
+            {
+                _breadcrumbStack.Pop();
+                break;
+            }
+            _breadcrumbStack.Pop();
+        }
+
+        CurrentFolderId = item.FileId;
+        await LoadFolderContentsAsync(SelectedLocation.Id, item.FileId);
+    }
+
+    [RelayCommand]
+    private async Task NavigateUpAsync()
+    {
+        if (CurrentFolderId is null || SelectedLocation is null)
+            return;
+
+        if (_breadcrumbStack.Count > 0)
+        {
+            var parent = _breadcrumbStack.Pop();
+            CurrentFolderId = parent.FileId;
+            await LoadFolderContentsAsync(SelectedLocation.Id, parent.FileId);
+        }
+        else
+        {
+            // Navigate to root
+            CurrentFolderId = null;
+            await LoadFolderContentsAsync(SelectedLocation.Id, null);
+        }
+    }
+
+    private async Task LoadFolderContentsAsync(long locationId, long? folderId)
+    {
+        _treeLoadCts?.Cancel();
+        _treeLoadCts?.Dispose();
+        _treeLoadCts = new CancellationTokenSource();
+        var cancellationToken = _treeLoadCts.Token;
+
+        try
+        {
+            _isShowingSearchResults = false;
+            IsLoadingFiles = true;
+
+            // Build folder name for status message
+            string folderName;
+            if (folderId is null)
+            {
+                folderName = SelectedLocation?.DisplayName ?? string.Empty;
+            }
+            else
+            {
+                var folder = await ServiceLocator.FileRepository.GetByIdAsync(folderId.Value);
+                folderName = folder?.Name ?? string.Empty;
+            }
+
+            StatusMessage = string.Format(CultureInfo.CurrentCulture, Strings.StatusLoading, folderName);
+
+            var files = await Task.Run(async () =>
+            {
+                var result = await ServiceLocator.FileRepository.GetByParentAsync(locationId, folderId);
+                cancellationToken.ThrowIfCancellationRequested();
+                return result.ToList();
+            }, cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // In tree view mode, show all files unfiltered
+            _allFiles = files;
+            Files = new ObservableCollection<FileEntry>(files);
+
+            await UpdateBreadcrumbsAsync();
+
+            if (SelectedLocation is not null)
+            {
+                TotalFiles = SelectedLocation.TotalFiles;
+                TotalFolders = SelectedLocation.TotalFolders;
+            }
+
+            StatusMessage = string.Format(CultureInfo.CurrentCulture, Strings.StatusLoaded, Files.Count);
+        }
+        catch (OperationCanceledException)
+        {
+            // Navigation was cancelled - ignore
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = string.Format(CultureInfo.CurrentCulture, Strings.ErrorLoading, ex.Message);
+        }
+        finally
+        {
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                IsLoadingFiles = false;
+            }
+        }
+    }
+
+    private async Task UpdateBreadcrumbsAsync()
+    {
+        Breadcrumbs.Clear();
+
+        if (SelectedLocation is null)
+            return;
+
+        // Add root
+        Breadcrumbs.Add(new BreadcrumbItem(null, SelectedLocation.DisplayName));
+
+        // Add items from stack (in reverse order since stack is LIFO)
+        var stackItems = _breadcrumbStack.Reverse().ToList();
+        foreach (var item in stackItems)
+        {
+            if (item.FileId is not null) // Skip root if it's in the stack
+            {
+                Breadcrumbs.Add(item);
+            }
+        }
+
+        // Add current folder if not at root
+        if (CurrentFolderId is not null)
+        {
+            var currentFolder = await ServiceLocator.FileRepository.GetByIdAsync(CurrentFolderId.Value);
+            if (currentFolder is not null)
+            {
+                Breadcrumbs.Add(new BreadcrumbItem(CurrentFolderId, currentFolder.Name));
+            }
+        }
+    }
+
+    #endregion
+
     /// <summary>
     /// Disposes of resources held by this ViewModel, including CancellationTokenSource instances.
     /// </summary>
@@ -944,15 +1203,18 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             _scanCts?.Cancel();
             _loadFilesCts?.Cancel();
             _filterCts?.Cancel();
+            _treeLoadCts?.Cancel();
 
             // Dispose managed resources
             _scanCts?.Dispose();
             _loadFilesCts?.Dispose();
             _filterCts?.Dispose();
+            _treeLoadCts?.Dispose();
 
             _scanCts = null;
             _loadFilesCts = null;
             _filterCts = null;
+            _treeLoadCts = null;
         }
 
         _disposed = true;

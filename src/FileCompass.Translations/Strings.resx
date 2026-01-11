@@ -165,6 +165,20 @@
     <value>None</value>
   </data>
 
+  <!-- View Mode -->
+  <data name="ViewModeTree" xml:space="preserve">
+    <value>Tree View</value>
+  </data>
+  <data name="ViewModeList" xml:space="preserve">
+    <value>List View</value>
+  </data>
+  <data name="BreadcrumbRoot" xml:space="preserve">
+    <value>Root</value>
+  </data>
+  <data name="NavigateUp" xml:space="preserve">
+    <value>Go to parent folder</value>
+  </data>
+
   <!-- Context Menu -->
   <data name="ContextRename" xml:space="preserve">
     <value>Rename...</value>

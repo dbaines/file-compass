@@ -13,6 +13,36 @@ public class FileRepository
         _db = db;
     }
 
+    /// <summary>
+    /// Adds a single file entry and returns its ID.
+    /// Used for directories where we need the ID immediately for parent tracking.
+    /// </summary>
+    public async Task<long> AddAsync(FileEntry file)
+    {
+        var conn = await _db.GetConnectionAsync();
+        using var cmd = conn.CreateCommand();
+
+        cmd.CommandText = """
+            INSERT INTO files (location_id, parent_id, name, extension, relative_path, size, is_directory, modified_at, created_at, attributes)
+            VALUES (@locationId, @parentId, @name, @extension, @relativePath, @size, @isDirectory, @modifiedAt, @createdAt, @attributes);
+            SELECT last_insert_rowid();
+            """;
+
+        cmd.Parameters.AddWithValue("@locationId", file.LocationId);
+        cmd.Parameters.AddWithValue("@parentId", file.ParentId.HasValue ? file.ParentId.Value : DBNull.Value);
+        cmd.Parameters.AddWithValue("@name", file.Name);
+        cmd.Parameters.AddWithValue("@extension", file.Extension ?? (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("@relativePath", file.RelativePath);
+        cmd.Parameters.AddWithValue("@size", file.Size);
+        cmd.Parameters.AddWithValue("@isDirectory", file.IsDirectory ? 1 : 0);
+        cmd.Parameters.AddWithValue("@modifiedAt", file.ModifiedAt?.ToString("o") ?? (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("@createdAt", file.CreatedAt?.ToString("o") ?? (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("@attributes", file.Attributes ?? (object)DBNull.Value);
+
+        var result = await cmd.ExecuteScalarAsync();
+        return Convert.ToInt64(result, System.Globalization.CultureInfo.InvariantCulture);
+    }
+
     public async Task<long> AddBatchAsync(IEnumerable<FileEntry> files)
     {
         var conn = await _db.GetConnectionAsync();
@@ -76,6 +106,46 @@ public class FileRepository
         cmd.Parameters.AddWithValue("@locationId", locationId);
 
         await cmd.ExecuteNonQueryAsync();
+    }
+
+    public async Task<FileEntry?> GetByIdAsync(long id)
+    {
+        var conn = await _db.GetConnectionAsync();
+        using var cmd = conn.CreateCommand();
+
+        cmd.CommandText = "SELECT * FROM files WHERE id = @id";
+        cmd.Parameters.AddWithValue("@id", id);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
+        {
+            return MapFileEntry(reader);
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Gets all files for a location (flat list for list view mode).
+    /// </summary>
+    public async Task<IReadOnlyList<FileEntry>> GetAllByLocationAsync(long locationId)
+    {
+        var conn = await _db.GetConnectionAsync();
+        using var cmd = conn.CreateCommand();
+
+        cmd.CommandText = """
+            SELECT * FROM files
+            WHERE location_id = @locationId
+            ORDER BY is_directory DESC, name
+            """;
+        cmd.Parameters.AddWithValue("@locationId", locationId);
+
+        var files = new List<FileEntry>();
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            files.Add(MapFileEntry(reader));
+        }
+        return files;
     }
 
     public async Task<IReadOnlyList<FileEntry>> GetByParentAsync(long locationId, long? parentId)

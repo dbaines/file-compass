@@ -25,6 +25,46 @@
         <KeyBinding Gesture="Escape" Command="{Binding ClearSearchCommand}"/>
     </Window.KeyBindings>
 
+    <Window.Styles>
+        <!-- Style RadioButtons to look like ToggleButtons for view mode switcher -->
+        <Style Selector="RadioButton.viewModeToggle">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border x:Name="PART_Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="RadioButton.viewModeToggle:checked /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}"/>
+        </Style>
+        <Style Selector="RadioButton.viewModeToggle:checked">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="RadioButton.viewModeToggle:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}"/>
+        </Style>
+        <Style Selector="RadioButton.viewModeToggle:checked:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{DynamicResource SystemAccentColorDark1}"/>
+        </Style>
+        <Style Selector="RadioButton.viewModeToggle:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+    </Window.Styles>
+
     <DockPanel>
         <!-- Menu Bar -->
         <Menu DockPanel.Dock="Top">
@@ -271,12 +311,36 @@
                         <!-- Row 2: Filters -->
                         <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
                                 BorderThickness="0,1,0,0">
-                            <Grid Margin="8" ColumnDefinitions="Auto,*,Auto">
+                            <Grid Margin="8" ColumnDefinitions="Auto,Auto,*,Auto">
+                                <!-- View Mode Toggle Buttons -->
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,16,0" Spacing="4">
+                                    <RadioButton ToolTip.Tip="{x:Static t:Strings.ViewModeTree}"
+                                                 GroupName="ViewMode"
+                                                 IsChecked="{Binding ViewMode, Converter={x:Static local:ViewModeToCheckedConverter.TreeInstance}, Mode=OneWay}"
+                                                 Command="{Binding SetTreeViewCommand}"
+                                                 IsEnabled="{Binding CanSwitchToTreeView}"
+                                                 Padding="6"
+                                                 Width="32" Height="32"
+                                                 Classes="viewModeToggle">
+                                        <iconPacks:PackIconMaterial Kind="FileTree" Width="16" Height="16"/>
+                                    </RadioButton>
+                                    <RadioButton ToolTip.Tip="{x:Static t:Strings.ViewModeList}"
+                                                 GroupName="ViewMode"
+                                                 IsChecked="{Binding ViewMode, Converter={x:Static local:ViewModeToCheckedConverter.ListInstance}, Mode=OneWay}"
+                                                 Command="{Binding SetListViewCommand}"
+                                                 Padding="6"
+                                                 Width="32" Height="32"
+                                                 Classes="viewModeToggle">
+                                        <iconPacks:PackIconMaterial Kind="FormatListBulleted" Width="16" Height="16"/>
+                                    </RadioButton>
+                                </StackPanel>
+
                                 <!-- File Type Filter Dropdown -->
-                                <Button Grid.Column="0"
+                                <Button Grid.Column="1"
                                         x:Name="FileTypeFilterButton"
                                         VerticalAlignment="Center"
-                                        Margin="0,0,8,0">
+                                        Margin="0,0,8,0"
+                                        IsVisible="{Binding ShowListViewFilters}">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
                                         <TextBlock Text="{Binding FileTypeFilterText}" VerticalAlignment="Center"/>
                                         <iconPacks:PackIconMaterial Kind="ChevronDown" Width="12" Height="12" VerticalAlignment="Center"/>
@@ -315,14 +379,56 @@
                                 </Button>
 
                                 <!-- Spacer -->
-                                <Border Grid.Column="1"/>
+                                <Border Grid.Column="2"/>
 
                                 <!-- Export -->
-                                <Button Grid.Column="2"
+                                <Button Grid.Column="3"
                                         Content="{x:Static t:Strings.ButtonExport}"
                                         Click="OnExportCsvClick"/>
                             </Grid>
                         </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Breadcrumb Navigation Bar -->
+                <Border DockPanel.Dock="Top"
+                        IsVisible="{Binding ShowBreadcrumbs}"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="8,4">
+                    <StackPanel Orientation="Horizontal">
+                        <Button Command="{Binding NavigateUpCommand}"
+                                IsEnabled="{Binding CurrentFolderId, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                ToolTip.Tip="{x:Static t:Strings.NavigateUp}"
+                                Padding="4"
+                                Margin="0,0,8,0">
+                            <iconPacks:PackIconMaterial Kind="ArrowUp" Width="14" Height="14"/>
+                        </Button>
+                        <ItemsControl ItemsSource="{Binding Breadcrumbs}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="{Binding Name}"
+                                                Command="{Binding $parent[Window].DataContext.NavigateToBreadcrumbCommand}"
+                                                CommandParameter="{Binding}"
+                                                Classes="hyperlink"
+                                                Padding="4,2"
+                                                Background="Transparent"
+                                                BorderThickness="0"/>
+                                        <TextBlock Text="/"
+                                                   VerticalAlignment="Center"
+                                                   Margin="4,0"
+                                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </Border>
 
@@ -372,7 +478,8 @@
                           CanUserSortColumns="True"
                           GridLinesVisibility="Horizontal"
                           RowHeight="28"
-                          IsVisible="{Binding ShowFileList}">
+                          IsVisible="{Binding ShowFileList}"
+                          DoubleTapped="OnFileDoubleTapped">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="{x:Static t:Strings.ColumnColumns}">

@@ -54,6 +54,12 @@ public static class Strings
     public static string ButtonAll => GetString("ButtonAll");
     public static string ButtonNone => GetString("ButtonNone");
     public static string ButtonAdd => GetString("ButtonAdd");
+
+    // View Mode
+    public static string ViewModeTree => GetString("ViewModeTree");
+    public static string ViewModeList => GetString("ViewModeList");
+    public static string BreadcrumbRoot => GetString("BreadcrumbRoot");
+    public static string NavigateUp => GetString("NavigateUp");
     public static string ButtonDelete => GetString("ButtonDelete");
     public static string ButtonEdit => GetString("ButtonEdit");
     public static string ButtonSave => GetString("ButtonSave");
