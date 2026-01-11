@@ -177,11 +177,8 @@ public static class Strings
     public static string DialogCancelScanMessage => GetString("DialogCancelScanMessage");
     public static string DialogCancelScanConfirm => GetString("DialogCancelScanConfirm");
     public static string DialogExportCsvTitle => GetString("DialogExportCsvTitle");
-    public static string DialogExportCsvFilename => GetString("DialogExportCsvFilename");
     public static string DialogExportExcelTitle => GetString("DialogExportExcelTitle");
-    public static string DialogExportExcelFilename => GetString("DialogExportExcelFilename");
     public static string DialogExportHtmlTitle => GetString("DialogExportHtmlTitle");
-    public static string DialogExportHtmlFilename => GetString("DialogExportHtmlFilename");
     public static string DialogBackupCreateTitle => GetString("DialogBackupCreateTitle");
     public static string DialogBackupRestoreTitle => GetString("DialogBackupRestoreTitle");
     public static string DialogUnsupportedSaveTitle => GetString("DialogUnsupportedSaveTitle");

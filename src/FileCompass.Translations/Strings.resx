@@ -485,20 +485,11 @@ Partial results may be lost.</value>
   <data name="DialogExportCsvTitle" xml:space="preserve">
     <value>Export to CSV</value>
   </data>
-  <data name="DialogExportCsvFilename" xml:space="preserve">
-    <value>file-catalog.csv</value>
-  </data>
   <data name="DialogExportExcelTitle" xml:space="preserve">
     <value>Export to Excel</value>
   </data>
-  <data name="DialogExportExcelFilename" xml:space="preserve">
-    <value>file-catalog.xlsx</value>
-  </data>
   <data name="DialogExportHtmlTitle" xml:space="preserve">
     <value>Export to HTML</value>
-  </data>
-  <data name="DialogExportHtmlFilename" xml:space="preserve">
-    <value>file-catalog.html</value>
   </data>
   <data name="DialogBackupCreateTitle" xml:space="preserve">
     <value>Create Backup</value>

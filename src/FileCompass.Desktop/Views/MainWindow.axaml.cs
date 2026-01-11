@@ -768,6 +768,37 @@ public partial class MainWindow : Window
         return result;
     }
 
+    private string GenerateExportFilename(string extension)
+    {
+        var vm = DataContext as MainWindowViewModel;
+        var parts = new List<string> { "filecompass" };
+
+        // Location name or "global"
+        parts.Add(vm?.SelectedLocation?.DisplayName ?? "global");
+
+        // Search term if searching
+        if (!string.IsNullOrWhiteSpace(vm?.SearchText))
+        {
+            parts.Add(vm.SearchText);
+        }
+
+        // Datetime
+        parts.Add(DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture));
+
+        // Export suffix
+        parts.Add("export");
+
+        // Sanitize and join
+        var filename = string.Join("-", parts.Select(SanitizeFilename));
+        return $"{filename}.{extension}";
+    }
+
+    private static string SanitizeFilename(string input)
+    {
+        var invalid = Path.GetInvalidFileNameChars();
+        return string.Concat(input.Select(c => invalid.Contains(c) ? '_' : c));
+    }
+
     private void OnExportCsvClick(object? sender, RoutedEventArgs e) => SafeExecuteAsync(async () =>
     {
         var topLevel = GetTopLevel(this);
@@ -776,7 +807,7 @@ public partial class MainWindow : Window
         var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title = Strings.DialogExportCsvTitle,
-            SuggestedFileName = Strings.DialogExportCsvFilename,
+            SuggestedFileName = GenerateExportFilename("csv"),
             FileTypeChoices =
             [
                 new FilePickerFileType(Strings.FiletypeCsv) { Patterns = ["*.csv"] },
@@ -804,7 +835,7 @@ public partial class MainWindow : Window
         var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title = Strings.DialogExportExcelTitle,
-            SuggestedFileName = Strings.DialogExportExcelFilename,
+            SuggestedFileName = GenerateExportFilename("xlsx"),
             FileTypeChoices =
             [
                 new FilePickerFileType(Strings.FiletypeExcel) { Patterns = ["*.xlsx"] },
@@ -832,7 +863,7 @@ public partial class MainWindow : Window
         var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title = Strings.DialogExportHtmlTitle,
-            SuggestedFileName = Strings.DialogExportHtmlFilename,
+            SuggestedFileName = GenerateExportFilename("html"),
             FileTypeChoices =
             [
                 new FilePickerFileType(Strings.FiletypeHtml) { Patterns = ["*.html", "*.htm"] },
