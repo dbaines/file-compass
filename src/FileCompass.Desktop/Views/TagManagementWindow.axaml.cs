@@ -112,21 +112,30 @@ public partial class TagManagementWindow : Window
         };
         buttonPanel.Children.Add(saveButton);
         buttonPanel.Children.Add(cancelButton);
+        DockPanel.SetDock(buttonPanel, Dock.Bottom);
+
+        var contentScrollViewer = new ScrollViewer
+        {
+            Content = inputPanel,
+            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto
+        };
 
         var dialog = new Window
         {
             Title = Strings.ButtonEdit,
             Width = 350,
-            Height = 150,
+            Height = 160,
+            MinHeight = 150,
+            MaxHeight = 300,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            Content = new StackPanel
+            CanResize = true,
+            Content = new DockPanel
             {
                 Margin = new Thickness(16),
                 Children =
                 {
-                    inputPanel,
-                    buttonPanel
+                    buttonPanel,
+                    contentScrollViewer
                 }
             }
         };
@@ -142,6 +151,21 @@ public partial class TagManagementWindow : Window
         cancelButton.Click += (s, args) =>
         {
             dialog.Close();
+        };
+
+        dialog.KeyDown += (s, args) =>
+        {
+            if (args.Key == Avalonia.Input.Key.Escape)
+            {
+                dialog.Close();
+                args.Handled = true;
+            }
+            else if (args.Key == Avalonia.Input.Key.Enter)
+            {
+                saved = true;
+                dialog.Close();
+                args.Handled = true;
+            }
         };
 
         await dialog.ShowDialog(this);
@@ -279,6 +303,17 @@ public partial class TagManagementWindow : Window
     {
         var result = false;
 
+        var messageScrollViewer = new ScrollViewer
+        {
+            Content = new TextBlock
+            {
+                Text = message,
+                TextWrapping = TextWrapping.Wrap
+            },
+            MaxHeight = 200,
+            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto
+        };
+
         var yesButton = new Button
         {
             Content = Strings.ButtonDelete,
@@ -302,25 +337,24 @@ public partial class TagManagementWindow : Window
         };
         buttonPanel.Children.Add(yesButton);
         buttonPanel.Children.Add(noButton);
+        DockPanel.SetDock(buttonPanel, Dock.Bottom);
 
         var dialog = new Window
         {
             Title = title,
             Width = 400,
-            Height = 150,
+            Height = 170,
+            MinHeight = 150,
+            MaxHeight = 350,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            Content = new StackPanel
+            CanResize = true,
+            Content = new DockPanel
             {
                 Margin = new Thickness(16),
                 Children =
                 {
-                    new TextBlock
-                    {
-                        Text = message,
-                        TextWrapping = TextWrapping.Wrap
-                    },
-                    buttonPanel
+                    buttonPanel,
+                    messageScrollViewer
                 }
             }
         };
@@ -334,6 +368,22 @@ public partial class TagManagementWindow : Window
         noButton.Click += (s, args) =>
         {
             dialog.Close();
+        };
+
+        dialog.KeyDown += (s, args) =>
+        {
+            if (args.Key == Avalonia.Input.Key.Escape)
+            {
+                result = false;
+                dialog.Close();
+                args.Handled = true;
+            }
+            else if (args.Key == Avalonia.Input.Key.Enter)
+            {
+                result = true;
+                dialog.Close();
+                args.Handled = true;
+            }
         };
 
         await dialog.ShowDialog(this);

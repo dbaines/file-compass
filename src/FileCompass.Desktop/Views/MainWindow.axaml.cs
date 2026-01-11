@@ -345,6 +345,15 @@ public partial class MainWindow : Window
             }
         };
 
+        dialog.KeyDown += (s, args) =>
+        {
+            if (args.Key == Avalonia.Input.Key.Escape || args.Key == Avalonia.Input.Key.Enter)
+            {
+                dialog.Close();
+                args.Handled = true;
+            }
+        };
+
         await dialog.ShowDialog(this);
     });
 
@@ -494,72 +503,106 @@ public partial class MainWindow : Window
             radioButtons.Children.Add(rescanRadio);
         }
 
+        var scrollableContent = new StackPanel
+        {
+            Spacing = 12,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = string.Format(CultureInfo.CurrentCulture, Strings.DialogLocationExistsMessage, path, existingLocations.Count),
+                    TextWrapping = Avalonia.Media.TextWrapping.Wrap
+                },
+                radioButtons
+            }
+        };
+
+        var contentScrollViewer = new ScrollViewer
+        {
+            Content = scrollableContent,
+            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto
+        };
+
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Margin = new Avalonia.Thickness(0, 16, 0, 0),
+            Spacing = 8,
+            Children =
+            {
+                new Button { Content = Strings.ButtonCancel, Tag = "cancel" },
+                new Button { Content = Strings.ButtonOk, Tag = "ok" }
+            }
+        };
+        DockPanel.SetDock(buttonPanel, Dock.Bottom);
+
+        // Calculate dialog height with max cap
+        var calculatedHeight = Math.Min(200 + existingLocations.Count * 30, 450);
+
         var dialog = new Window
         {
             Title = Strings.DialogLocationExistsTitle,
             Width = 500,
-            Height = 200 + existingLocations.Count * 30,
+            Height = calculatedHeight,
+            MinHeight = 200,
+            MaxHeight = 600,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            Content = new StackPanel
+            CanResize = true,
+            Content = new DockPanel
             {
                 Margin = new Avalonia.Thickness(16),
-                Spacing = 12,
                 Children =
                 {
-                    new TextBlock
-                    {
-                        Text = string.Format(CultureInfo.CurrentCulture, Strings.DialogLocationExistsMessage, path, existingLocations.Count),
-                        TextWrapping = Avalonia.Media.TextWrapping.Wrap
-                    },
-                    radioButtons,
-                    new StackPanel
-                    {
-                        Orientation = Avalonia.Layout.Orientation.Horizontal,
-                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
-                        Margin = new Avalonia.Thickness(0, 8, 0, 0),
-                        Spacing = 8,
-                        Children =
-                        {
-                            new Button { Content = Strings.ButtonCancel, Tag = "cancel" },
-                            new Button { Content = Strings.ButtonOk, Tag = "ok" }
-                        }
-                    }
+                    buttonPanel,
+                    contentScrollViewer
                 }
             }
         };
 
-        if (dialog.Content is StackPanel panel && panel.Children[2] is StackPanel buttonPanel)
+        // Helper to get result from selected radio button
+        LocationConflictResult? getResultFromSelection()
         {
-            foreach (var child in buttonPanel.Children)
+            foreach (var rb in radioButtons.Children.OfType<RadioButton>())
             {
-                if (child is Button button)
+                if (rb.IsChecked == true)
                 {
-                    button.Click += (s, args) =>
-                    {
-                        if (string.Equals(button.Tag?.ToString(), "ok", StringComparison.Ordinal))
-                        {
-                            foreach (var rb in radioButtons.Children.OfType<RadioButton>())
-                            {
-                                if (rb.IsChecked == true)
-                                {
-                                    if (string.Equals(rb.Tag?.ToString(), "new", StringComparison.Ordinal))
-                                    {
-                                        result = new LocationConflictResult(true, null);
-                                    }
-                                    else if (rb.Tag is long locationId)
-                                    {
-                                        result = new LocationConflictResult(false, locationId);
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                        dialog.Close();
-                    };
+                    if (string.Equals(rb.Tag?.ToString(), "new", StringComparison.Ordinal))
+                        return new LocationConflictResult(true, null);
+                    else if (rb.Tag is long locationId)
+                        return new LocationConflictResult(false, locationId);
                 }
             }
+            return null;
         }
+
+        foreach (var child in buttonPanel.Children)
+        {
+            if (child is Button button)
+            {
+                button.Click += (s, args) =>
+                {
+                    if (string.Equals(button.Tag?.ToString(), "ok", StringComparison.Ordinal))
+                        result = getResultFromSelection();
+                    dialog.Close();
+                };
+            }
+        }
+
+        dialog.KeyDown += (s, args) =>
+        {
+            if (args.Key == Avalonia.Input.Key.Escape)
+            {
+                dialog.Close();
+                args.Handled = true;
+            }
+            else if (args.Key == Avalonia.Input.Key.Enter)
+            {
+                result = getResultFromSelection();
+                dialog.Close();
+                args.Handled = true;
+            }
+        };
 
         await dialog.ShowDialog(this);
         return result;
@@ -586,9 +629,9 @@ public partial class MainWindow : Window
         var allTags = await ServiceLocator.TagRepository.GetAllAsync();
         var tagCheckBoxes = new List<(CheckBox cb, long tagId)>();
 
-        var contentPanel = new StackPanel
+        // Build scrollable content area
+        var scrollableContent = new StackPanel
         {
-            Margin = new Avalonia.Thickness(16),
             Children =
             {
                 new TextBlock { Text = Strings.DialogNameLocationLabel },
@@ -611,7 +654,7 @@ public partial class MainWindow : Window
                 Text = Strings.TagsOptional,
                 Margin = new Avalonia.Thickness(0, 12, 0, 4)
             };
-            contentPanel.Children.Add(tagsLabel);
+            scrollableContent.Children.Add(tagsLabel);
 
             var tagPanel = new WrapPanel { Orientation = Avalonia.Layout.Orientation.Horizontal };
             foreach (var tag in allTags)
@@ -636,8 +679,14 @@ public partial class MainWindow : Window
                 tagCheckBoxes.Add((cb, tag.Id));
                 tagPanel.Children.Add(cb);
             }
-            contentPanel.Children.Add(tagPanel);
+            scrollableContent.Children.Add(tagPanel);
         }
+
+        var contentScrollViewer = new ScrollViewer
+        {
+            Content = scrollableContent,
+            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto
+        };
 
         var buttonPanel = new StackPanel
         {
@@ -651,18 +700,40 @@ public partial class MainWindow : Window
                 new Button { Content = Strings.ButtonOk, Tag = "ok" }
             }
         };
-        contentPanel.Children.Add(buttonPanel);
+        DockPanel.SetDock(buttonPanel, Dock.Bottom);
 
-        var dialogHeight = allTags.Count > 0 ? 250 : 170;
+        var dialogHeight = allTags.Count > 0 ? Math.Min(250 + allTags.Count * 5, 400) : 170;
         var dialog = new Window
         {
             Title = Strings.DialogNameLocationTitle,
             Width = 450,
             Height = dialogHeight,
+            MinHeight = 170,
+            MaxHeight = 500,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            Content = contentPanel
+            CanResize = true,
+            Content = new DockPanel
+            {
+                Margin = new Avalonia.Thickness(16),
+                Children =
+                {
+                    buttonPanel,
+                    contentScrollViewer
+                }
+            }
         };
+
+        // Helper to get result if valid
+        NameAndTagsResult? tryGetResult()
+        {
+            if (string.IsNullOrWhiteSpace(textBox.Text))
+                return null;
+            var selectedTagIds = tagCheckBoxes
+                .Where(x => x.cb.IsChecked == true)
+                .Select(x => x.tagId)
+                .ToList();
+            return new NameAndTagsResult(textBox.Text, selectedTagIds);
+        }
 
         foreach (var child in buttonPanel.Children)
         {
@@ -670,18 +741,28 @@ public partial class MainWindow : Window
             {
                 button.Click += (s, args) =>
                 {
-                    if (string.Equals(button.Tag?.ToString(), "ok", StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(textBox.Text))
-                    {
-                        var selectedTagIds = tagCheckBoxes
-                            .Where(x => x.cb.IsChecked == true)
-                            .Select(x => x.tagId)
-                            .ToList();
-                        result = new NameAndTagsResult(textBox.Text, selectedTagIds);
-                    }
+                    if (string.Equals(button.Tag?.ToString(), "ok", StringComparison.Ordinal))
+                        result = tryGetResult();
                     dialog.Close();
                 };
             }
         }
+
+        dialog.KeyDown += (s, args) =>
+        {
+            if (args.Key == Avalonia.Input.Key.Escape)
+            {
+                dialog.Close();
+                args.Handled = true;
+            }
+            else if (args.Key == Avalonia.Input.Key.Enter)
+            {
+                result = tryGetResult();
+                if (result is not null)
+                    dialog.Close();
+                args.Handled = true;
+            }
+        };
 
         await dialog.ShowDialog(this);
         return result;
@@ -861,53 +942,84 @@ public partial class MainWindow : Window
             Margin = new Avalonia.Thickness(0, 8, 0, 0)
         };
 
+        var scrollableContent = new StackPanel
+        {
+            Children =
+            {
+                new TextBlock { Text = Strings.DialogRenameLocationLabel },
+                textBox
+            }
+        };
+
+        var contentScrollViewer = new ScrollViewer
+        {
+            Content = scrollableContent,
+            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto
+        };
+
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Margin = new Avalonia.Thickness(0, 16, 0, 0),
+            Spacing = 8,
+            Children =
+            {
+                new Button { Content = Strings.ButtonCancel, Tag = "cancel" },
+                new Button { Content = Strings.ButtonOk, Tag = "ok" }
+            }
+        };
+        DockPanel.SetDock(buttonPanel, Dock.Bottom);
+
         var dialog = new Window
         {
             Title = Strings.DialogRenameLocationTitle,
             Width = 400,
-            Height = 150,
+            Height = 160,
+            MinHeight = 150,
+            MaxHeight = 300,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            Content = new StackPanel
+            CanResize = true,
+            Content = new DockPanel
             {
                 Margin = new Avalonia.Thickness(16),
                 Children =
                 {
-                    new TextBlock { Text = Strings.DialogRenameLocationLabel },
-                    textBox,
-                    new StackPanel
-                    {
-                        Orientation = Avalonia.Layout.Orientation.Horizontal,
-                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
-                        Margin = new Avalonia.Thickness(0, 16, 0, 0),
-                        Spacing = 8,
-                        Children =
-                        {
-                            new Button { Content = Strings.ButtonCancel, Tag = "cancel" },
-                            new Button { Content = Strings.ButtonOk, Tag = "ok" }
-                        }
-                    }
+                    buttonPanel,
+                    contentScrollViewer
                 }
             }
         };
 
         string? result = null;
 
-        if (dialog.Content is StackPanel panel && panel.Children[2] is StackPanel buttonPanel)
+        foreach (var child in buttonPanel.Children)
         {
-            foreach (var child in buttonPanel.Children)
+            if (child is Button button)
             {
-                if (child is Button button)
+                button.Click += (s, args) =>
                 {
-                    button.Click += (s, args) =>
-                    {
-                        if (string.Equals(button.Tag?.ToString(), "ok", StringComparison.Ordinal))
-                            result = textBox.Text;
-                        dialog.Close();
-                    };
-                }
+                    if (string.Equals(button.Tag?.ToString(), "ok", StringComparison.Ordinal))
+                        result = textBox.Text;
+                    dialog.Close();
+                };
             }
         }
+
+        dialog.KeyDown += (s, args) =>
+        {
+            if (args.Key == Avalonia.Input.Key.Escape)
+            {
+                dialog.Close();
+                args.Handled = true;
+            }
+            else if (args.Key == Avalonia.Input.Key.Enter)
+            {
+                result = textBox.Text;
+                dialog.Close();
+                args.Handled = true;
+            }
+        };
 
         await dialog.ShowDialog(this);
 
@@ -917,37 +1029,55 @@ public partial class MainWindow : Window
 
     private async Task ShowErrorDialogAsync(string title, string message)
     {
+        var messageScrollViewer = new ScrollViewer
+        {
+            Content = new TextBlock
+            {
+                Text = message,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+            },
+            MaxHeight = 300,
+            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto
+        };
+
+        var okButton = new Button
+        {
+            Content = Strings.ButtonOk,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Margin = new Avalonia.Thickness(0, 16, 0, 0),
+        };
+        DockPanel.SetDock(okButton, Dock.Bottom);
+
         var dialog = new Window
         {
             Title = title,
             Width = 400,
-            Height = 150,
+            Height = 180,
+            MinHeight = 150,
+            MaxHeight = 450,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            Content = new StackPanel
+            CanResize = true,
+            Content = new DockPanel
             {
                 Margin = new Avalonia.Thickness(16),
                 Children =
                 {
-                    new TextBlock
-                    {
-                        Text = message,
-                        TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                    },
-                    new Button
-                    {
-                        Content = Strings.ButtonOk,
-                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
-                        Margin = new Avalonia.Thickness(0, 16, 0, 0),
-                    },
+                    okButton,
+                    messageScrollViewer,
                 },
             },
         };
 
-        if (dialog.Content is StackPanel panel && panel.Children[1] is Button okButton)
+        okButton.Click += (_, _) => dialog.Close();
+
+        dialog.KeyDown += (s, args) =>
         {
-            okButton.Click += (_, _) => dialog.Close();
-        }
+            if (args.Key == Avalonia.Input.Key.Escape || args.Key == Avalonia.Input.Key.Enter)
+            {
+                dialog.Close();
+                args.Handled = true;
+            }
+        };
 
         await dialog.ShowDialog(this);
     }
@@ -1195,53 +1325,79 @@ public partial class MainWindow : Window
     {
         bool result = false;
 
+        var messageScrollViewer = new ScrollViewer
+        {
+            Content = new TextBlock
+            {
+                Text = message,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+            },
+            MaxHeight = 250,
+            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto
+        };
+
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Margin = new Avalonia.Thickness(0, 16, 0, 0),
+            Spacing = 8,
+            Children =
+            {
+                new Button { Content = Strings.ButtonCancel, Tag = "cancel" },
+                new Button { Content = Strings.DialogCancelScanConfirm, Tag = "confirm" }
+            }
+        };
+
         var dialog = new Window
         {
             Title = title,
             Width = 400,
-            Height = 170,
+            Height = 180,
+            MinHeight = 150,
+            MaxHeight = 400,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            Content = new StackPanel
+            CanResize = true,
+            Content = new DockPanel
             {
                 Margin = new Avalonia.Thickness(16),
                 Children =
                 {
-                    new TextBlock
-                    {
-                        Text = message,
-                        TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                    },
-                    new StackPanel
-                    {
-                        Orientation = Avalonia.Layout.Orientation.Horizontal,
-                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
-                        Margin = new Avalonia.Thickness(0, 16, 0, 0),
-                        Spacing = 8,
-                        Children =
-                        {
-                            new Button { Content = Strings.ButtonCancel, Tag = "cancel" },
-                            new Button { Content = Strings.DialogCancelScanConfirm, Tag = "confirm" }
-                        }
-                    }
+                    buttonPanel,
+                    messageScrollViewer,
                 }
             }
         };
 
-        if (dialog.Content is StackPanel panel && panel.Children[1] is StackPanel buttonPanel)
+        DockPanel.SetDock(buttonPanel, Dock.Bottom);
+
+        foreach (var child in buttonPanel.Children)
         {
-            foreach (var child in buttonPanel.Children)
+            if (child is Button button)
             {
-                if (child is Button button)
+                button.Click += (s, args) =>
                 {
-                    button.Click += (s, args) =>
-                    {
-                        result = string.Equals(button.Tag?.ToString(), "confirm", StringComparison.Ordinal);
-                        dialog.Close();
-                    };
-                }
+                    result = string.Equals(button.Tag?.ToString(), "confirm", StringComparison.Ordinal);
+                    dialog.Close();
+                };
             }
         }
+
+        dialog.KeyDown += (s, args) =>
+        {
+            if (args.Key == Avalonia.Input.Key.Escape)
+            {
+                result = false;
+                dialog.Close();
+                args.Handled = true;
+            }
+            else if (args.Key == Avalonia.Input.Key.Enter)
+            {
+                result = true;
+                dialog.Close();
+                args.Handled = true;
+            }
+        };
 
         await dialog.ShowDialog(this);
         return result;
