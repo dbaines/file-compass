@@ -237,6 +237,8 @@ public static class Strings
     public static string SettingsClearHistory => GetString("SettingsClearHistory");
     public static string SettingsHistoryCount => GetString("SettingsHistoryCount");
     public static string SettingsHistoryCleared => GetString("SettingsHistoryCleared");
+    public static string SettingsScanning => GetString("SettingsScanning");
+    public static string SettingsHideSystemFolders => GetString("SettingsHideSystemFolders");
     public static string SettingsDatabase => GetString("SettingsDatabase");
     public static string SettingsDatabaseLocation => GetString("SettingsDatabaseLocation");
     public static string SettingsDatabaseSize => GetString("SettingsDatabaseSize");

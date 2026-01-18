@@ -11,9 +11,11 @@ public class FileScannerService : IDisposable
     private readonly DatabaseService _db;
     private readonly LocationRepository _locationRepo;
     private readonly FileRepository _fileRepo;
+    private readonly SettingsRepository _settingsRepo;
     private ManualResetEventSlim? _pauseEvent;
     private bool _isPaused;
     private bool _disposed;
+    private bool _hideSystemFolders;
 
     public bool IsPaused => _isPaused;
 
@@ -21,12 +23,14 @@ public class FileScannerService : IDisposable
         IFileSystem fileSystem,
         DatabaseService db,
         LocationRepository locationRepo,
-        FileRepository fileRepo)
+        FileRepository fileRepo,
+        SettingsRepository settingsRepo)
     {
         _fileSystem = fileSystem;
         _db = db;
         _locationRepo = locationRepo;
         _fileRepo = fileRepo;
+        _settingsRepo = settingsRepo;
     }
 
     public void Pause()
@@ -97,6 +101,9 @@ public class FileScannerService : IDisposable
         _pauseEvent?.Dispose();
         _pauseEvent = new ManualResetEventSlim(true); // Start in signaled (running) state
         _isPaused = false;
+
+        // Load setting once at scan start to avoid repeated database calls
+        _hideSystemFolders = await _settingsRepo.GetHideSystemFoldersAsync();
 
         // Update status to scanning
         location.Status = LocationStatus.Scanning;
@@ -258,6 +265,13 @@ public class FileScannerService : IDisposable
                 }
 
                 var isDirectory = entry is IDirectoryInfo;
+
+                // Skip excluded system folders (recycle bin, trash, recovery folders)
+                if (isDirectory && _hideSystemFolders && ShouldExcludeDirectory(entry.Name))
+                {
+                    continue;
+                }
+
                 var fileEntry = new FileEntry
                 {
                     LocationId = locationId,
@@ -362,6 +376,27 @@ public class FileScannerService : IDisposable
             return false;
 
         return true;
+    }
+
+    private static bool ShouldExcludeDirectory(string name)
+    {
+        // $RECYCLE.BIN (Windows recycle bin)
+        if (name.Equals("$RECYCLE.BIN", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        // found.XXX (chkdsk recovery folders, e.g., found.000, found.001)
+        if (name.StartsWith("found.", StringComparison.OrdinalIgnoreCase) &&
+            name.Length > 6 &&
+            name[6..].All(char.IsDigit))
+            return true;
+
+        // .Trash-NNNN (Linux trash folders, e.g., .Trash-1000)
+        if (name.StartsWith(".Trash-", StringComparison.OrdinalIgnoreCase) &&
+            name.Length > 7 &&
+            name[7..].All(char.IsDigit))
+            return true;
+
+        return false;
     }
 
     private static bool IsSymlink(IFileSystemInfo entry)

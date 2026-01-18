@@ -11,6 +11,7 @@ public class FileScannerServiceTests : IDisposable
     private readonly DatabaseService _db;
     private readonly LocationRepository _locationRepo;
     private readonly FileRepository _fileRepo;
+    private readonly SettingsRepository _settingsRepo;
 
     public FileScannerServiceTests()
     {
@@ -18,6 +19,7 @@ public class FileScannerServiceTests : IDisposable
         _db = new DatabaseService(_tempDbPath);
         _locationRepo = new LocationRepository(_db);
         _fileRepo = new FileRepository(_db);
+        _settingsRepo = new SettingsRepository(_db);
     }
 
     [Fact]
@@ -40,7 +42,7 @@ public class FileScannerServiceTests : IDisposable
         var symlinkDir = mockFileSystem.DirectoryInfo.New("/test/symlink");
         mockFileSystem.File.SetAttributes("/test/symlink", FileAttributes.Directory | FileAttributes.ReparsePoint);
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
 
         var location = await scanner.ScanLocationAsync("/test", null);
 
@@ -64,7 +66,7 @@ public class FileScannerServiceTests : IDisposable
         mockFileSystem.AddDirectory("/test/symlink");
         mockFileSystem.File.SetAttributes("/test/symlink", FileAttributes.Directory | FileAttributes.ReparsePoint);
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
 
         var location = await scanner.ScanLocationAsync("/test", null);
 
@@ -85,7 +87,7 @@ public class FileScannerServiceTests : IDisposable
         mockFileSystem.AddDirectory("/test/subdir");
         mockFileSystem.AddFile("/test/subdir/nested.txt", new MockFileData("nested content"));
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
 
         var location = await scanner.ScanLocationAsync("/test", null);
 
@@ -107,7 +109,7 @@ public class FileScannerServiceTests : IDisposable
         mockFileSystem.AddFile("/test/symlink.txt", new MockFileData("symlink target"));
         mockFileSystem.File.SetAttributes("/test/symlink.txt", FileAttributes.ReparsePoint);
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
 
         var location = await scanner.ScanLocationAsync("/test", null);
 
@@ -133,7 +135,7 @@ public class FileScannerServiceTests : IDisposable
             FileAttributes.Directory | FileAttributes.ReparsePoint);
         mockFileSystem.AddFile("/test/level1/level2/file.txt", new MockFileData("content"));
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
 
         // This should complete without hanging
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -159,7 +161,7 @@ public class FileScannerServiceTests : IDisposable
             mockFileSystem.AddFile($"/test/file{i}.txt", new MockFileData($"content {i}"));
         }
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
         var location = await scanner.ScanLocationAsync("/test", null);
 
         Assert.Equal(10, location.TotalFiles);
@@ -175,7 +177,7 @@ public class FileScannerServiceTests : IDisposable
         mockFileSystem.AddFile("/test/small.txt", new MockFileData("small"));
         mockFileSystem.AddFile("/test/large.txt", new MockFileData(new string('x', 10000)));
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
         var location = await scanner.ScanLocationAsync("/test", null);
 
         var query = new SearchQuery { LocationId = location.Id };
@@ -199,7 +201,7 @@ public class FileScannerServiceTests : IDisposable
         mockFileSystem.AddDirectory("/test/dir1/dir2");
         mockFileSystem.AddFile("/test/dir1/dir2/nested.txt", new MockFileData("nested"));
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
         var location = await scanner.ScanLocationAsync("/test", null);
 
         var query = new SearchQuery { LocationId = location.Id };
@@ -221,7 +223,7 @@ public class FileScannerServiceTests : IDisposable
         mockFileSystem.AddFile("/test/image.PNG", new MockFileData("png content")); // uppercase
         mockFileSystem.AddFile("/test/noextension", new MockFileData("no ext"));
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
         var location = await scanner.ScanLocationAsync("/test", null);
 
         var query = new SearchQuery { LocationId = location.Id };
@@ -255,7 +257,7 @@ public class FileScannerServiceTests : IDisposable
         var progressReports = new List<ScanProgress>();
         var progress = new Progress<ScanProgress>(p => progressReports.Add(p));
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
         await scanner.ScanLocationAsync("/test", null, false, progress);
 
         // Give progress a moment to propagate (Progress<T> posts callbacks asynchronously)
@@ -284,7 +286,7 @@ public class FileScannerServiceTests : IDisposable
         ScanProgress? lastProgress = null;
         var progress = new Progress<ScanProgress>(p => lastProgress = p);
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
         await scanner.ScanLocationAsync("/test", null, false, progress);
 
         // Give progress a moment to propagate
@@ -316,7 +318,7 @@ public class FileScannerServiceTests : IDisposable
         var cts = new CancellationTokenSource();
         cts.Cancel(); // Cancel immediately
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
 
         await Assert.ThrowsAsync<OperationCanceledException>(() =>
             scanner.ScanLocationAsync("/test", null, false, null, cts.Token));
@@ -331,7 +333,7 @@ public class FileScannerServiceTests : IDisposable
         mockFileSystem.AddDirectory("/test");
         mockFileSystem.AddFile("/test/file.txt", new MockFileData("content"));
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
 
         // First do a successful scan to create the location
         var location = await scanner.ScanLocationAsync("/test", null);
@@ -375,7 +377,7 @@ public class FileScannerServiceTests : IDisposable
         var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
 
         try
         {
@@ -406,7 +408,7 @@ public class FileScannerServiceTests : IDisposable
         mockFileSystem.AddDirectory("/test");
         mockFileSystem.AddFile("/test/file.txt", new MockFileData("content"));
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
         var location = await scanner.ScanLocationAsync("/test", null);
 
         // Final status should be UpToDate
@@ -422,7 +424,7 @@ public class FileScannerServiceTests : IDisposable
         mockFileSystem.AddDirectory("/test");
         mockFileSystem.AddFile("/test/file.txt", new MockFileData("content"));
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
         var location = await scanner.ScanLocationAsync("/test", null);
 
         Assert.Equal(LocationStatus.UpToDate, location.Status);
@@ -441,7 +443,7 @@ public class FileScannerServiceTests : IDisposable
 
         var beforeScan = DateTime.UtcNow.AddSeconds(-1);
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
         var location = await scanner.ScanLocationAsync("/test", null);
 
         var afterScan = DateTime.UtcNow.AddSeconds(1);
@@ -466,7 +468,7 @@ public class FileScannerServiceTests : IDisposable
         mockFileSystem.AddDirectory("/test");
         mockFileSystem.AddFile("/test/file.txt", new MockFileData("content"));
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
         var location = await scanner.ScanLocationAsync("/test", "My Custom Name");
 
         Assert.Equal("My Custom Name", location.CustomName);
@@ -482,7 +484,7 @@ public class FileScannerServiceTests : IDisposable
         mockFileSystem.AddDirectory("/test");
         mockFileSystem.AddFile("/test/file.txt", new MockFileData("content"));
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
 
         var location1 = await scanner.ScanLocationAsync("/test", "First");
         var location2 = await scanner.ScanLocationAsync("/test", null); // Should reuse
@@ -499,7 +501,7 @@ public class FileScannerServiceTests : IDisposable
         mockFileSystem.AddDirectory("/test");
         mockFileSystem.AddFile("/test/file.txt", new MockFileData("content"));
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
 
         var location1 = await scanner.ScanLocationAsync("/test", "First");
         var location2 = await scanner.ScanLocationAsync("/test", "Second", forceNew: true);
@@ -522,7 +524,7 @@ public class FileScannerServiceTests : IDisposable
         mockFileSystem.AddDirectory("/test");
         mockFileSystem.AddFile("/test/original.txt", new MockFileData("original"));
 
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
         var location = await scanner.ScanLocationAsync("/test", null);
 
         // Remove original and add new file
@@ -544,10 +546,132 @@ public class FileScannerServiceTests : IDisposable
         await _db.InitializeAsync();
 
         var mockFileSystem = new MockFileSystem();
-        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo);
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             scanner.RescanLocationAsync(99999));
+    }
+
+    #endregion
+
+    #region System Folder Exclusion Tests
+
+    [Fact]
+    public async Task ScanLocationAsync_ExcludesRecycleBin_WhenSettingEnabled()
+    {
+        await _db.InitializeAsync();
+        await _settingsRepo.SetHideSystemFoldersAsync(true);
+
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.AddDirectory("/test");
+        mockFileSystem.AddDirectory("/test/$RECYCLE.BIN");
+        mockFileSystem.AddFile("/test/$RECYCLE.BIN/deleted.txt", new MockFileData("deleted"));
+        mockFileSystem.AddFile("/test/regular.txt", new MockFileData("regular"));
+
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
+        var location = await scanner.ScanLocationAsync("/test", null);
+
+        var query = new SearchQuery { LocationId = location.Id, IncludeDirectories = true };
+        var result = await _fileRepo.SearchAsync(query);
+
+        Assert.DoesNotContain(result.Files, f => string.Equals(f.Name, "$RECYCLE.BIN", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(result.Files, f => string.Equals(f.Name, "deleted.txt", StringComparison.Ordinal));
+        Assert.Contains(result.Files, f => string.Equals(f.Name, "regular.txt", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ScanLocationAsync_ExcludesFoundFolders_WhenSettingEnabled()
+    {
+        await _db.InitializeAsync();
+        await _settingsRepo.SetHideSystemFoldersAsync(true);
+
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.AddDirectory("/test");
+        mockFileSystem.AddDirectory("/test/found.000");
+        mockFileSystem.AddFile("/test/found.000/recovered.txt", new MockFileData("recovered"));
+        mockFileSystem.AddDirectory("/test/found.123");
+        mockFileSystem.AddFile("/test/regular.txt", new MockFileData("regular"));
+
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
+        var location = await scanner.ScanLocationAsync("/test", null);
+
+        var query = new SearchQuery { LocationId = location.Id, IncludeDirectories = true };
+        var result = await _fileRepo.SearchAsync(query);
+
+        Assert.DoesNotContain(result.Files, f => f.Name.StartsWith("found.", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(result.Files, f => string.Equals(f.Name, "recovered.txt", StringComparison.Ordinal));
+        Assert.Contains(result.Files, f => string.Equals(f.Name, "regular.txt", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ScanLocationAsync_ExcludesTrashFolders_WhenSettingEnabled()
+    {
+        await _db.InitializeAsync();
+        await _settingsRepo.SetHideSystemFoldersAsync(true);
+
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.AddDirectory("/test");
+        mockFileSystem.AddDirectory("/test/.Trash-1000");
+        mockFileSystem.AddFile("/test/.Trash-1000/trashed.txt", new MockFileData("trashed"));
+        mockFileSystem.AddFile("/test/regular.txt", new MockFileData("regular"));
+
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
+        var location = await scanner.ScanLocationAsync("/test", null);
+
+        var query = new SearchQuery { LocationId = location.Id, IncludeDirectories = true };
+        var result = await _fileRepo.SearchAsync(query);
+
+        Assert.DoesNotContain(result.Files, f => f.Name.StartsWith(".Trash-", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(result.Files, f => string.Equals(f.Name, "trashed.txt", StringComparison.Ordinal));
+        Assert.Contains(result.Files, f => string.Equals(f.Name, "regular.txt", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ScanLocationAsync_IncludesSystemFolders_WhenSettingDisabled()
+    {
+        await _db.InitializeAsync();
+        await _settingsRepo.SetHideSystemFoldersAsync(false);
+
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.AddDirectory("/test");
+        mockFileSystem.AddDirectory("/test/$RECYCLE.BIN");
+        mockFileSystem.AddFile("/test/$RECYCLE.BIN/deleted.txt", new MockFileData("deleted"));
+        mockFileSystem.AddDirectory("/test/found.000");
+        mockFileSystem.AddDirectory("/test/.Trash-1000");
+
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
+        var location = await scanner.ScanLocationAsync("/test", null);
+
+        var query = new SearchQuery { LocationId = location.Id, IncludeDirectories = true };
+        var result = await _fileRepo.SearchAsync(query);
+
+        Assert.Contains(result.Files, f => string.Equals(f.Name, "$RECYCLE.BIN", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(result.Files, f => string.Equals(f.Name, "found.000", StringComparison.Ordinal));
+        Assert.Contains(result.Files, f => string.Equals(f.Name, ".Trash-1000", StringComparison.Ordinal));
+        Assert.Contains(result.Files, f => string.Equals(f.Name, "deleted.txt", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ScanLocationAsync_CaseInsensitiveExclusion()
+    {
+        await _db.InitializeAsync();
+        await _settingsRepo.SetHideSystemFoldersAsync(true);
+
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.AddDirectory("/test");
+        mockFileSystem.AddDirectory("/test/$recycle.bin"); // lowercase
+        mockFileSystem.AddDirectory("/test/FOUND.001"); // uppercase
+        mockFileSystem.AddFile("/test/regular.txt", new MockFileData("regular"));
+
+        var scanner = new FileScannerService(mockFileSystem, _db, _locationRepo, _fileRepo, _settingsRepo);
+        var location = await scanner.ScanLocationAsync("/test", null);
+
+        var query = new SearchQuery { LocationId = location.Id, IncludeDirectories = true };
+        var result = await _fileRepo.SearchAsync(query);
+
+        Assert.DoesNotContain(result.Files, f => string.Equals(f.Name, "$recycle.bin", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(result.Files, f => string.Equals(f.Name, "FOUND.001", StringComparison.OrdinalIgnoreCase));
+        Assert.Single(result.Files); // Only regular.txt
     }
 
     #endregion

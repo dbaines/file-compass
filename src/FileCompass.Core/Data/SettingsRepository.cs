@@ -129,4 +129,16 @@ public class SettingsRepository
         var json = JsonSerializer.Serialize(visibility);
         await SetAsync("column_visibility", json);
     }
+
+    public async Task<bool> GetHideSystemFoldersAsync()
+    {
+        var value = await GetAsync("hide_system_folders");
+        // Default to true (hide system folders by default)
+        return string.IsNullOrEmpty(value) || string.Equals(value, "true", StringComparison.Ordinal);
+    }
+
+    public async Task SetHideSystemFoldersAsync(bool value)
+    {
+        await SetAsync("hide_system_folders", value ? "true" : "false");
+    }
 }

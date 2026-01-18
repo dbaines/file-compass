@@ -661,6 +661,12 @@ Partial results may be lost.</value>
   <data name="SettingsHistoryCleared" xml:space="preserve">
     <value>0 items</value>
   </data>
+  <data name="SettingsScanning" xml:space="preserve">
+    <value>Scanning</value>
+  </data>
+  <data name="SettingsHideSystemFolders" xml:space="preserve">
+    <value>Hide system folders ($RECYCLE.BIN, .Trash, found.XXX)</value>
+  </data>
   <data name="SettingsDatabase" xml:space="preserve">
     <value>Database</value>
   </data>

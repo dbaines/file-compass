@@ -15,6 +15,7 @@ public partial class SettingsWindow : Window
     {
         InitializeComponent();
         LoadSettings();
+        HideSystemFoldersCheckBox.IsCheckedChanged += OnHideSystemFoldersChanged;
         _isInitializing = false;
     }
 
@@ -32,6 +33,10 @@ public partial class SettingsWindow : Window
         // Load search history count
         var history = await ServiceLocator.SettingsRepository.GetSearchHistoryAsync();
         HistoryCountText.Text = string.Format(CultureInfo.CurrentCulture, Strings.SettingsHistoryCount, history.Count);
+
+        // Load hide system folders setting
+        var hideSystemFolders = await ServiceLocator.SettingsRepository.GetHideSystemFoldersAsync();
+        HideSystemFoldersCheckBox.IsChecked = hideSystemFolders;
 
         // Database info
         var dbPath = DatabaseService.GetDefaultDatabasePath();
@@ -66,6 +71,14 @@ public partial class SettingsWindow : Window
     {
         await ServiceLocator.SettingsRepository.ClearSearchHistoryAsync();
         HistoryCountText.Text = Strings.SettingsHistoryCleared;
+    }
+
+    private async void OnHideSystemFoldersChanged(object? sender, RoutedEventArgs e)
+    {
+        if (_isInitializing) return;
+
+        await ServiceLocator.SettingsRepository.SetHideSystemFoldersAsync(
+            HideSystemFoldersCheckBox.IsChecked ?? true);
     }
 
     private void OnCloseClick(object? sender, RoutedEventArgs e)

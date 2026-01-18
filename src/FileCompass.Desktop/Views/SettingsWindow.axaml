@@ -78,6 +78,23 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Scanning Section -->
+                <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="12">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="{x:Static t:Strings.SettingsScanning}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"/>
+
+                        <CheckBox x:Name="HideSystemFoldersCheckBox"
+                                  Content="{x:Static t:Strings.SettingsHideSystemFolders}"
+                                  IsChecked="True"
+                                  Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+
                 <!-- Database Section -->
                 <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
                         BorderThickness="1"

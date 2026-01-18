@@ -46,7 +46,8 @@ public static class ServiceLocator
             FileSystem,
             DatabaseService,
             LocationRepository,
-            FileRepository);
+            FileRepository,
+            SettingsRepository);
 
     public static ExportService ExportService =>
         _exportService ??= new ExportService();
