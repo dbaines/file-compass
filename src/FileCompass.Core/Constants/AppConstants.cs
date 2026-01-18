@@ -6,7 +6,7 @@ namespace FileCompass.Core.Constants;
 public static class AppConstants
 {
     public const string AppName = "FileCompass";
-    public const string AppVersion = "0.3.0";
+    public const string AppVersion = "0.3.1";
     public const string DatabaseFileName = "catalog.db";
     public const string BackupFileExtension = ".fci";
 
